@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FörderFunke</title>
+</head>
+<body>
+    <script src="./node_modules/@foerderfunke/matching-engine/dist/bundle.js"></script>
+    <script>
+        let userProfile = `
+@prefix ff: <https://foerderfunke.org/default#> .
+
+ff:mainPerson a ff:Citizen ;
+    ff:hasAge 24 .
+        `
+
+        let shacl = `
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix ff: <https://foerderfunke.org/default#> .
+
+ff:MainPersonShape a sh:NodeShape ;
+    sh:targetClass ff:Citizen ;
+    sh:property [
+        sh:path ff:hasAge ;
+        sh:maxExclusive 18 ;
+    ] .
+        `
+
+        MatchingEngine.validateOne(userProfile, "", "", shacl).then((report) => {
+            console.log(report)
+        })
+    </script>
+</body>
+</html>
