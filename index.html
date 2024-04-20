@@ -5,6 +5,7 @@
     <title>FörderFunke</title>
 </head>
 <body>
+    <div id="output"></div>
     <script src="./node_modules/@foerderfunke/matching-engine/dist/bundle.js"></script>
     <script>
         let userProfile = `
@@ -28,6 +29,7 @@ ff:MainPersonShape a sh:NodeShape ;
 
         MatchingEngine.validateOne(userProfile, "", "", shacl).then((report) => {
             console.log(report)
+            document.getElementById("output").innerHTML = JSON.stringify(report, null, 2)
         })
     </script>
 </body>
