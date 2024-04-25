@@ -9,6 +9,7 @@
     "cloneRepo": "rm -rf public/requirement-profiles && git clone https://github.com/Citizen-Knowledge-Graph/requirement-profiles public/requirement-profiles",
     "cleanRepo": "rm -rf public/requirement-profiles/.git*",
     "copyBundle": "cp ./node_modules/@foerderfunke/matching-engine/dist/bundle.js public/",
-    "collectAssets": "npm run cloneRepo && npm run cleanRepo && npm run copyBundle"
+    "listShaclFiles": "ls public/requirement-profiles/shacl > public/shacl-files.txt",
+    "collectAssets": "npm run cloneRepo && npm run cleanRepo && npm run copyBundle && npm run listShaclFiles"
   }
 }
