@@ -6,6 +6,6 @@
     "@foerderfunke/matching-engine": "^0.3.1"
   },
   "scripts": {
-    "predeploy": "git clone https://github.com/Citizen-Knowledge-Graph/requirement-profiles public/requirement-profiles && cp ./node_modules/@foerderfunke/matching-engine/dist/bundle.js public/"
+    "collectAssets": "git clone https://github.com/Citizen-Knowledge-Graph/requirement-profiles public/requirement-profiles && cp ./node_modules/@foerderfunke/matching-engine/dist/bundle.js public/"
   }
 }
