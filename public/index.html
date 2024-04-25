@@ -32,15 +32,27 @@ ff:MainPersonShape a sh:NodeShape ;
             document.getElementById("output").innerHTML = JSON.stringify(report, null, 2)
         })
 
-        function fetchTurtleDev() {
-            fetch("requirement-profiles/meta.ttl")
-                .then(response => response.text())
-                .then(data => {
-                    console.log("data", data)
-                })
-                .catch(err => console.error(err));
+        async function fetchTextFile(relPath) {
+            const response = await fetch(relPath)
+            return await response.text()
         }
-        fetchTurtleDev()
+
+        async function loadFiles() {
+            let turtleContents = {
+                "datafields": await fetchTextFile("requirement-profiles/datafields.ttl"),
+                "materialization": await fetchTextFile("requirement-profiles/materialization.ttl"),
+                "shacl": {}
+            }
+            let shaclFiles = await fetchTextFile("shacl-files.txt")
+            for (let shaclFile of shaclFiles.split("\n")) {
+                if (!shaclFile) continue
+                turtleContents.shacl[shaclFile] = await fetchTextFile("requirement-profiles/shacl/" + shaclFile)
+            }
+            return turtleContents
+        }
+
+        loadFiles()
+
     </script>
 </body>
 </html>
