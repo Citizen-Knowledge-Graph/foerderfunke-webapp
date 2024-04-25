@@ -31,6 +31,16 @@ ff:MainPersonShape a sh:NodeShape ;
             console.log(report)
             document.getElementById("output").innerHTML = JSON.stringify(report, null, 2)
         })
+
+        function fetchTTL() {
+            fetch('public/requirement-profiles/meta.ttl')
+                .then(response => response.text())
+                .then(data => {
+                    console.log("data", data)
+                })
+                .catch(err => console.error(err));
+        }
+        fetchTTL()
     </script>
 </body>
 </html>
