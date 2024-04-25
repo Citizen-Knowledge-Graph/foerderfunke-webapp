@@ -6,7 +6,7 @@
 </head>
 <body>
     <div id="output"></div>
-    <script src="./public/bundle.js"></script>
+    <script src="./bundle.js"></script>
     <script>
         let userProfile = `
 @prefix ff: <https://foerderfunke.org/default#> .
@@ -32,15 +32,15 @@ ff:MainPersonShape a sh:NodeShape ;
             document.getElementById("output").innerHTML = JSON.stringify(report, null, 2)
         })
 
-        function fetchTTL() {
-            fetch('public/requirement-profiles/meta.ttl')
+        function fetchTurtleDev() {
+            fetch("requirement-profiles/meta.ttl")
                 .then(response => response.text())
                 .then(data => {
                     console.log("data", data)
                 })
                 .catch(err => console.error(err));
         }
-        fetchTTL()
+        fetchTurtleDev()
     </script>
 </body>
 </html>

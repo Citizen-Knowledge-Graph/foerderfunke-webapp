@@ -6,6 +6,9 @@
     "@foerderfunke/matching-engine": "^0.3.1"
   },
   "scripts": {
-    "collectAssets": "git clone https://github.com/Citizen-Knowledge-Graph/requirement-profiles public/requirement-profiles && cp ./node_modules/@foerderfunke/matching-engine/dist/bundle.js public/"
+    "cloneRepo": "git clone https://github.com/Citizen-Knowledge-Graph/requirement-profiles public/requirement-profiles",
+    "cleanRepo": "rm -rf public/requirement-profiles/.git*",
+    "copyBundle": "cp ./node_modules/@foerderfunke/matching-engine/dist/bundle.js public/",
+    "collectAssets": "npm run cloneRepo && npm run cleanRepo && npm run copyBundle"
   }
 }

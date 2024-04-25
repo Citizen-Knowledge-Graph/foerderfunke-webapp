@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Prepare gh-pages branch
 
 on:
   push:
@@ -8,26 +8,20 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.11.1'
-
+          node-version: "20.11.1"
       - name: Install dependencies
         run: npm install
-
       - name: Collect assets
         run: npm run collectAssets
-
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          keep_files: true
-          allow_empty_commit: true
-          force_orphan: true
