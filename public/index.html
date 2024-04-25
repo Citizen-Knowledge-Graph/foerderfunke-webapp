@@ -29,7 +29,6 @@ ff:MainPersonShape a sh:NodeShape ;
 
         MatchingEngine.validateOne(userProfile, "", "", shacl).then((report) => {
             console.log(report)
-            document.getElementById("output").innerHTML = JSON.stringify(report, null, 2)
         })
 
         async function fetchTextFile(relPath) {
@@ -38,20 +37,35 @@ ff:MainPersonShape a sh:NodeShape ;
         }
 
         async function loadFiles() {
-            let turtleContents = {
+            let turtleMap = {
                 "datafields": await fetchTextFile("requirement-profiles/datafields.ttl"),
                 "materialization": await fetchTextFile("requirement-profiles/materialization.ttl"),
                 "shacl": {}
             }
             let shaclFiles = await fetchTextFile("shacl-files.txt")
-            for (let shaclFile of shaclFiles.split("\n")) {
-                if (!shaclFile) continue
-                turtleContents.shacl[shaclFile] = await fetchTextFile("requirement-profiles/shacl/" + shaclFile)
+            for (let filename of shaclFiles.split("\n")) {
+                if (!filename) continue
+                turtleMap.shacl[filename] = await fetchTextFile("requirement-profiles/shacl/" + filename)
             }
-            return turtleContents
+            return turtleMap
         }
 
-        loadFiles()
+        async function extractReqProfileNames() {
+            let turtleMap = await loadFiles()
+            let store = await MatchingEngine.rdfStringsToStore(Object.values(turtleMap.shacl))
+            let query = `
+PREFIX ff: <https://foerderfunke.org/default#>
+SELECT * WHERE {
+    ff:metadata ff:title ?title .
+}
+            `
+            let result = await MatchingEngine.runSparqlSelectQueryOnStore(query, store)
+            for (let row of result) {
+                document.getElementById("output").innerHTML += row.title + "<br>"
+            }
+        }
+
+        extractReqProfileNames()
 
     </script>
 </body>
