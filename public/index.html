@@ -5,14 +5,19 @@
     <title>FörderFunke</title>
 </head>
 <body>
-    <div id="output"></div>
+    <h3>User profile</h3>
+    <div id="userProfileDiv"></div>
+    <h4>Missing data points</h4>
+    <div id="missingDataPointsDiv"></div>
+    <h3>Report</h3>
+    <table id="reportTable"></table>
+
     <script src="./bundle.js"></script>
     <script>
         let userProfile = `
 @prefix ff: <https://foerderfunke.org/default#> .
 
-ff:mainPerson a ff:Citizen ;
-    ff:hasAge 24 .
+ff:mainPerson a ff:Citizen .
         `
 
         let shacl = `
@@ -24,6 +29,8 @@ ff:MainPersonShape a sh:NodeShape ;
     sh:property [
         sh:path ff:hasAge ;
         sh:maxExclusive 18 ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
     ] .
         `
 
@@ -60,12 +67,37 @@ SELECT * WHERE {
 }
             `
             let result = await MatchingEngine.runSparqlSelectQueryOnStore(query, store)
-            for (let row of result) {
-                document.getElementById("output").innerHTML += row.title + "<br>"
-            }
+            console.log("Req profile titles", result)
         }
 
         extractReqProfileNames()
+
+        async function validateAll() {
+            document.getElementById("userProfileDiv").textContent = userProfile
+
+            let turtleMap = await loadFiles()
+            let validateAllReport = await MatchingEngine.validateAll(userProfile, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
+            console.log(validateAllReport)
+
+            for (let report of validateAllReport.reports) {
+                let tr = document.createElement("tr")
+                let td = document.createElement("td")
+                td.textContent = report.title ? report.title : report.filename
+                tr.appendChild(td)
+                td = document.createElement("td")
+                td.textContent = report.result
+                tr.appendChild(td)
+                document.getElementById("reportTable").appendChild(tr)
+            }
+
+            let missingData = validateAllReport.missingUserInputsAggregated
+            let missingDataPoints = []
+            for (let key of Object.keys(missingData)) {
+                document.getElementById("missingDataPointsDiv").innerHTML += missingData[key].usedIn.length + ": " + missingData[key].predicate.split("#")[1] + "<br>"
+            }
+        }
+
+        validateAll()
 
     </script>
 </body>
