@@ -7,13 +7,18 @@
 <body>
     <h3>User profile</h3>
     <div id="userProfileDiv"></div>
-    <h4>Missing data points</h4>
+    <h3>Missing data points</h3>
+    <label for="focusInput">Set a focus:</label>
+    <input type="text" id="focusInput" placeholder="Category or specific benefit">
+    <br/><br/>
     <div id="missingDataPointsDiv"></div>
     <h3>Report</h3>
     <table id="reportTable"></table>
 
     <script src="./bundle.js"></script>
     <script>
+        let missingData
+
         let userProfile = `
 @prefix ff: <https://foerderfunke.org/default#> .
 
@@ -90,11 +95,21 @@ SELECT * WHERE {
                 document.getElementById("reportTable").appendChild(tr)
             }
 
-            let missingData = validateAllReport.missingUserInputsAggregated
-            let missingDataPoints = []
+            missingData = validateAllReport.missingUserInputsAggregated
+            buildPrioritizedMissingDataList()
+        }
+
+        function buildPrioritizedMissingDataList() {
+            let div = document.getElementById("missingDataPointsDiv")
+            div.innerHTML = ""
+            let prioritizedList = []
             for (let key of Object.keys(missingData)) {
-                document.getElementById("missingDataPointsDiv").innerHTML += missingData[key].usedIn.length + ": " + missingData[key].predicate.split("#")[1] + "<br>"
+                prioritizedList.push([missingData[key].predicate.split("#")[1], missingData[key].usedIn.length])
             }
+            prioritizedList.sort((a, b) => b[1] - a[1])
+            prioritizedList.forEach((entry) => {
+                div.innerHTML += entry[1] + ": " + entry[0] + "<br>"
+            })
         }
 
         validateAll()
