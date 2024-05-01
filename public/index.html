@@ -101,15 +101,29 @@ SELECT * WHERE {
 
         function buildPrioritizedMissingDataList() {
             let div = document.getElementById("missingDataPointsDiv")
-            div.innerHTML = ""
+            div.textContent = ""
             let prioritizedList = []
             for (let key of Object.keys(missingData)) {
                 prioritizedList.push([missingData[key].predicate.split("#")[1], missingData[key].usedIn.length])
             }
             prioritizedList.sort((a, b) => b[1] - a[1])
             prioritizedList.forEach((entry) => {
-                div.innerHTML += entry[1] + ": " + entry[0] + "<br>"
-            })
+                let textNode = document.createTextNode(entry[1] + ": ")
+                div.appendChild(textNode)
+                let a = document.createElement("a")
+                a.href = "#"
+                a.textContent = entry[0]
+                a.addEventListener("click", function(event) {
+                    event.preventDefault()
+                    let input = prompt("What is your value for " + entry[0])
+                    if (input !== null) {
+                        console.log(entry[0], "-->", input)
+                        // TODO
+                    }
+                });
+                div.appendChild(a)
+                div.appendChild(document.createElement("br"))
+            });
         }
 
         validateAll()
