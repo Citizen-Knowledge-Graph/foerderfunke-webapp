@@ -3,13 +3,15 @@
   "version": "0.0.1",
   "description": "FörderFunke as a web app, the data only lives within the browser session locally",
   "dependencies": {
-    "@foerderfunke/matching-engine": "^0.3.4"
+    "@foerderfunke/matching-engine": "^0.3.4",
+    "choices.js": "^10.2.0"
   },
   "scripts": {
     "cloneRepo": "rm -rf public/requirement-profiles && git clone https://github.com/Citizen-Knowledge-Graph/requirement-profiles public/requirement-profiles",
     "cleanRepo": "rm -rf public/requirement-profiles/.git*",
     "copyBundle": "cp ./node_modules/@foerderfunke/matching-engine/dist/bundle.js public/",
+    "copyDependencies": "cp ./node_modules/choices.js/public/assets/styles/choices.min.css public/ && cp ./node_modules/choices.js/public/assets/scripts/choices.min.js public/",
     "listShaclFiles": "ls public/requirement-profiles/shacl > public/shacl-files.txt",
-    "collectAssets": "npm run cloneRepo && npm run cleanRepo && npm run copyBundle && npm run listShaclFiles"
+    "collectAssets": "npm run cloneRepo && npm run cleanRepo && npm run copyBundle && npm run copyDependencies && npm run listShaclFiles"
   }
 }

@@ -3,20 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <title>FörderFunke</title>
+    <script src="./bundle.js"></script>
+    <link rel="stylesheet" href="./choices.min.css" />
+    <script src="./choices.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+    </style>
 </head>
 <body>
     <h3>User profile</h3>
     <div id="userProfileDiv"></div>
     <h3>Missing data points</h3>
     <label for="focusInput">Set a focus:</label>
-    <input type="text" id="focusInput" placeholder="Category or specific benefit">
-    <br/><br/>
+    <select id="focusInput" multiple></select>
     <div id="missingDataPointsDiv"></div>
     <h3>Report</h3>
     <table id="reportTable"></table>
 
-    <script src="./bundle.js"></script>
     <script>
+        const element = document.getElementById("focusInput")
+        const choices = new Choices(element, {
+            removeItemButton: true,
+            position: "bottom",
+            placeholderValue: "Select items",
+            choices: [
+                {
+                    label: "GroupA",
+                    choices: [
+                        {value: "foo", label: "Foo"},
+                        {value: "bar", label: "Bar"},
+                    ]
+                },
+                {
+                    label: "GroupB",
+                    choices: [
+                        {value: "hey", label: "Hey"},
+                        {value: "jo", label: "Jo"},
+                    ]
+                },
+            ],
+        });
+
         let missingData
 
         let userProfile = `
