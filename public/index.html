@@ -10,6 +10,9 @@
         body {
             font-family: Arial, sans-serif;
         }
+        .loadingDiv {
+            color: gray;
+        }
     </style>
 </head>
 <body>
@@ -17,9 +20,12 @@
     <div id="userProfileDiv"></div>
     <h3>Missing data points</h3>
     <label for="focusInput">Set a focus:</label>
+    <br/><br/>
     <select id="focusInput" multiple></select>
+    <div class="loadingDiv">Loading...</div>
     <div id="missingDataPointsDiv"></div>
     <h3>Report</h3>
+    <div class="loadingDiv">Loading...</div>
     <table id="reportTable"></table>
 
     <script>
@@ -27,7 +33,7 @@
         const choices = new Choices(element, {
             removeItemButton: true,
             position: "bottom",
-            placeholderValue: "Select items",
+            placeholderValue: "No focus set --> prioritization of missing data points goes over all requirement profiles",
             choices: [
                 {
                     label: "GroupA",
@@ -153,6 +159,9 @@ SELECT * WHERE {
                 div.appendChild(a)
                 div.appendChild(document.createElement("br"))
             });
+            for (const elem of Array.from(document.getElementsByClassName("loadingDiv"))) {
+                elem.style.display = "none"
+            }
         }
 
         validateAll()
