@@ -36,7 +36,7 @@
             placeholderValue: "No focus set --> prioritization of missing data points goes over all requirement profiles",
         });
 
-        let missingData
+        let validateAllReport
 
         let userProfile = `
 @prefix ff: <https://foerderfunke.org/default#> .
@@ -89,7 +89,7 @@ ff:mainPerson a ff:Citizen .
 
             let turtleMap = await loadFiles()
 
-            let validateAllReport = await MatchingEngine.validateAll(userProfile, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
+            validateAllReport = await MatchingEngine.validateAll(userProfile, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
             console.log("validateAllReport", validateAllReport)
 
             buildFocusInputSelectChoices(validateAllReport.metadata);
@@ -105,7 +105,6 @@ ff:mainPerson a ff:Citizen .
                 document.getElementById("reportTable").appendChild(tr)
             }
 
-            missingData = validateAllReport.missingUserInputsAggregated
             buildPrioritizedMissingDataList()
         }
 
@@ -113,16 +112,34 @@ ff:mainPerson a ff:Citizen .
             let div = document.getElementById("missingDataPointsDiv")
             div.textContent = ""
             let prioritizedList = []
+
+            let missingData = validateAllReport.missingUserInputsAggregated
+            let metadata = validateAllReport.metadata
+
             for (let key of Object.keys(missingData)) {
-                prioritizedList.push([missingData[key].predicate.split("#")[1], missingData[key].usedIn.length])
+                let datafield = missingData[key]
+                let usedInTitles = []
+                let lastMissingCounter = 0
+                for (let usedInRP of datafield.usedIn) {
+                    usedInTitles.push(metadata[usedInRP.id].title + (usedInRP.isLastMissingUserInput ? " (!)" : ""))
+                    if (usedInRP.isLastMissingUserInput) lastMissingCounter += 1
+                }
+                prioritizedList.push({
+                    label: datafield.label ?? datafield.predicate.split("#")[1],
+                    score: datafield.usedIn.length + lastMissingCounter,
+                    usedInTitles: usedInTitles
+                })
             }
-            prioritizedList.sort((a, b) => b[1] - a[1])
+            prioritizedList.sort((a, b) => b.score - a.score)
             prioritizedList.forEach((entry) => {
-                let textNode = document.createTextNode(entry[1] + ": ")
-                div.appendChild(textNode)
+                let spanEl = document.createElement("span")
+                spanEl.title = entry.usedInTitles.join("\n")
+                let textNode = document.createTextNode(entry.score + ": ")
+                spanEl.appendChild(textNode)
+                div.appendChild(spanEl)
                 let a = document.createElement("a")
                 a.href = "#"
-                a.textContent = entry[0]
+                a.textContent = entry.label
                 a.addEventListener("click", function(event) {
                     event.preventDefault()
                     let input = prompt("What is your value for " + entry[0])
