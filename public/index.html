@@ -44,24 +44,6 @@
 ff:mainPerson a ff:Citizen .
         `
 
-        let shacl = `
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix ff: <https://foerderfunke.org/default#> .
-
-ff:MainPersonShape a sh:NodeShape ;
-    sh:targetClass ff:Citizen ;
-    sh:property [
-        sh:path ff:hasAge ;
-        sh:maxExclusive 18 ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-    ] .
-        `
-
-        MatchingEngine.validateOne(userProfile, "", "", shacl).then((report) => {
-            console.log(report)
-        })
-
         async function fetchTextFile(relPath) {
             const response = await fetch(relPath)
             return await response.text()
@@ -81,9 +63,7 @@ ff:MainPersonShape a sh:NodeShape ;
             return turtleMap
         }
 
-        async function processReqProfileMetadata(turtleMap) {
-            let rqMetadata = await MatchingEngine.extractRequirementProfilesMetadata(Object.values(turtleMap.shacl))
-            console.log("rqMetadata", rqMetadata)
+        function buildFocusInputSelectChoices(metadata) {
             // TODO
 
             focusInputSelect.setChoices([
@@ -108,10 +88,11 @@ ff:MainPersonShape a sh:NodeShape ;
             document.getElementById("userProfileDiv").textContent = userProfile
 
             let turtleMap = await loadFiles()
-            await processReqProfileMetadata(turtleMap)
 
             let validateAllReport = await MatchingEngine.validateAll(userProfile, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
-            console.log(validateAllReport)
+            console.log("validateAllReport", validateAllReport)
+
+            buildFocusInputSelectChoices(validateAllReport.metadata);
 
             for (let report of validateAllReport.reports) {
                 let tr = document.createElement("tr")
