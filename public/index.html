@@ -19,9 +19,9 @@
     <h3>User profile</h3>
     <div id="userProfileDiv"></div>
     <h3>Missing data points</h3>
-    <label for="focusInput">Set a focus:</label>
-    <br/><br/>
-    <select id="focusInput" multiple></select>
+    <div>Set a focus:</div>
+    <br/>
+    <select id="focusInputSelectElement" multiple></select>
     <div class="loadingDiv">Loading...</div>
     <div id="missingDataPointsDiv"></div>
     <h3>Report</h3>
@@ -29,27 +29,11 @@
     <table id="reportTable"></table>
 
     <script>
-        const element = document.getElementById("focusInput")
-        const choices = new Choices(element, {
+        const element = document.getElementById("focusInputSelectElement")
+        const focusInputSelect = new Choices(element, {
             removeItemButton: true,
             position: "bottom",
             placeholderValue: "No focus set --> prioritization of missing data points goes over all requirement profiles",
-            choices: [
-                {
-                    label: "GroupA",
-                    choices: [
-                        {value: "foo", label: "Foo"},
-                        {value: "bar", label: "Bar"},
-                    ]
-                },
-                {
-                    label: "GroupB",
-                    choices: [
-                        {value: "hey", label: "Hey"},
-                        {value: "jo", label: "Jo"},
-                    ]
-                },
-            ],
         });
 
         let missingData
@@ -97,25 +81,35 @@ ff:MainPersonShape a sh:NodeShape ;
             return turtleMap
         }
 
-        async function extractReqProfileNames() {
-            let turtleMap = await loadFiles()
-            let store = await MatchingEngine.rdfStringsToStore(Object.values(turtleMap.shacl))
-            let query = `
-PREFIX ff: <https://foerderfunke.org/default#>
-SELECT * WHERE {
-    ff:metadata ff:title ?title .
-}
-            `
-            let result = await MatchingEngine.runSparqlSelectQueryOnStore(query, store)
-            console.log("Req profile titles", result)
-        }
+        async function processReqProfileMetadata(turtleMap) {
+            let rqMetadata = await MatchingEngine.extractRequirementProfilesMetadata(Object.values(turtleMap.shacl))
+            console.log("rqMetadata", rqMetadata)
+            // TODO
 
-        extractReqProfileNames()
+            focusInputSelect.setChoices([
+                {
+                    label: "GroupA",
+                    choices: [
+                        {value: "foo", label: "Foo"},
+                        {value: "bar", label: "Bar"},
+                    ]
+                },
+                {
+                    label: "GroupB",
+                    choices: [
+                        {value: "hey", label: "Hey"},
+                        {value: "jo", label: "Jo"},
+                    ]
+                },
+            ])
+        }
 
         async function validateAll() {
             document.getElementById("userProfileDiv").textContent = userProfile
 
             let turtleMap = await loadFiles()
+            await processReqProfileMetadata(turtleMap)
+
             let validateAllReport = await MatchingEngine.validateAll(userProfile, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
             console.log(validateAllReport)
 
