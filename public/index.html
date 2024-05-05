@@ -36,6 +36,8 @@
             placeholderValue: "No focus set --> prioritization of missing data points goes over all requirement profiles",
         });
 
+        let turtleMap
+        let metadata
         let validateAllReport
 
         let userProfile = `
@@ -63,7 +65,15 @@ ff:mainPerson a ff:Citizen .
             return turtleMap
         }
 
-        function buildFocusInputSelectChoices(metadata) {
+        async function fetchMetadata() {
+            metadata = {
+                df: await MatchingEngine.extractDatafieldsMetadata(turtleMap.datafields),
+                rp: await MatchingEngine.extractRequirementProfilesMetadata(Object.values(turtleMap.shacl))
+            }
+            console.log("metadata", metadata)
+        }
+
+        function buildFocusInputSelectChoices() {
             // TODO
 
             focusInputSelect.setChoices([
@@ -87,12 +97,8 @@ ff:mainPerson a ff:Citizen .
         async function validateAll() {
             document.getElementById("userProfileDiv").textContent = userProfile
 
-            let turtleMap = await loadFiles()
-
             validateAllReport = await MatchingEngine.validateAll(userProfile, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
             console.log("validateAllReport", validateAllReport)
-
-            buildFocusInputSelectChoices(validateAllReport.metadata);
 
             for (let report of validateAllReport.reports) {
                 let tr = document.createElement("tr")
@@ -114,7 +120,6 @@ ff:mainPerson a ff:Citizen .
             let prioritizedList = []
 
             let missingData = validateAllReport.missingUserInputsAggregated
-            let metadata = validateAllReport.metadata
 
             for (let key of Object.keys(missingData)) {
                 let datafield = missingData[key]
@@ -156,7 +161,14 @@ ff:mainPerson a ff:Citizen .
             }
         }
 
-        validateAll()
+        async function run() {
+            turtleMap = await loadFiles()
+            await fetchMetadata()
+            // validateAll()
+            // buildFocusInputSelectChoices()
+        }
+
+        run()
 
     </script>
 </body>
