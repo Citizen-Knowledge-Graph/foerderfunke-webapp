@@ -103,7 +103,7 @@ ff:mainPerson a ff:Citizen .
             for (let report of validateAllReport.reports) {
                 let tr = document.createElement("tr")
                 let td = document.createElement("td")
-                td.textContent = report.title ? report.title : report.filename
+                td.textContent = metadata.rp[report.rpUri]?.title ?? report.rpUri
                 tr.appendChild(td)
                 td = document.createElement("td")
                 td.textContent = report.result
@@ -126,11 +126,11 @@ ff:mainPerson a ff:Citizen .
                 let usedInTitles = []
                 let lastMissingCounter = 0
                 for (let usedInRP of datafield.usedIn) {
-                    usedInTitles.push(metadata[usedInRP.id].title + (usedInRP.isLastMissingUserInput ? " (!)" : ""))
+                    usedInTitles.push(metadata.rp[usedInRP.rpUri].title + (usedInRP.isLastMissingUserInput ? " (!)" : ""))
                     if (usedInRP.isLastMissingUserInput) lastMissingCounter += 1
                 }
                 prioritizedList.push({
-                    label: datafield.label ?? datafield.predicate.split("#")[1],
+                    label: metadata.df[datafield.dfUri]?.label ?? datafield.dfUri.split("#")[1],
                     score: datafield.usedIn.length + lastMissingCounter,
                     usedInTitles: usedInTitles
                 })
@@ -164,7 +164,7 @@ ff:mainPerson a ff:Citizen .
         async function run() {
             turtleMap = await loadFiles()
             await fetchMetadata()
-            // validateAll()
+            await validateAll()
             // buildFocusInputSelectChoices()
         }
 
