@@ -130,6 +130,7 @@ ff:mainPerson a ff:Citizen .
                     if (usedInRP.isLastMissingUserInput) lastMissingCounter += 1
                 }
                 prioritizedList.push({
+                    dfUri: datafield.dfUri,
                     label: metadata.df[datafield.dfUri]?.label ?? datafield.dfUri.split("#")[1],
                     score: datafield.usedIn.length + lastMissingCounter,
                     usedInTitles: usedInTitles
@@ -147,9 +148,9 @@ ff:mainPerson a ff:Citizen .
                 a.textContent = entry.label
                 a.addEventListener("click", function(event) {
                     event.preventDefault()
-                    let input = prompt("What is your value for " + entry[0])
+                    let input = prompt("What is your value for: " + entry.label)
                     if (input !== null) {
-                        console.log(entry[0], "-->", input)
+                        console.log(entry.dfUri, "-->", input)
                         // TODO
                     }
                 });
