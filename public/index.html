@@ -109,10 +109,10 @@
                 tableEl.appendChild(tr)
             }
 
-            buildPrioritizedMissingDataList()
+            await buildPrioritizedMissingDataList()
         }
 
-        function buildPrioritizedMissingDataList() {
+        async function buildPrioritizedMissingDataList() {
             let div = document.getElementById("missingDataPointsDiv")
             div.textContent = ""
             let prioritizedList = []
@@ -161,12 +161,22 @@
             }
         }
 
-        function addProfileEntry(dfUri, object) {
-            userProfile["ff:" + dfUri.split("#")[1]] = object
+        async function addProfileEntry(dfUri, value) {
+            let key = "ff:" + dfUri.split("#")[1]
+            let result = await MatchingEngine.validateSingleDatafieldValue({ [key]: value }, turtleMap.datafields)
+            if (!result.conforms) {
+                let msgs = "\n"
+                for (let violation of result.violations) {
+                    msgs += violation.message + "\n"
+                }
+                alert(value + " is an invalid input for " + metadata.df[dfUri].label + ": " + msgs)
+                return
+            }
+            userProfile[key] = value
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
-            buildProfile()
-            validateAll()
+            await buildProfile()
+            await validateAll()
         }
 
         async function buildProfile() {
