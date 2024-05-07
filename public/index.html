@@ -71,22 +71,31 @@
         }
 
         function buildFocusInputSelectChoices() {
-            // TODO
-
+            let categories = {}
+            let rps = []
+            for (let rp of Object.values(metadata.rp)) {
+                rps.push({
+                    value: rp.uri,
+                    label: rp.title,
+                })
+                for (let cat of rp.categories) {
+                    if (!categories[cat]) categories[cat] = []
+                    categories[cat].push(rp.uri)
+                }
+            }
             focusInputSelect.setChoices([
                 {
-                    label: "GroupA",
-                    choices: [
-                        {value: "foo", label: "Foo"},
-                        {value: "bar", label: "Bar"},
-                    ]
+                    label: "Categories",
+                    choices: Object.keys(categories).map(uri => {
+                        return {
+                            value: uri,
+                            label: uri.split("#")[1],
+                        }
+                    })
                 },
                 {
-                    label: "GroupB",
-                    choices: [
-                        {value: "hey", label: "Hey"},
-                        {value: "jo", label: "Jo"},
-                    ]
+                    label: "Requirement Profiles",
+                    choices: rps
                 },
             ])
         }
@@ -264,9 +273,9 @@
 
             turtleMap = await loadFiles()
             await fetchMetadata()
+            buildFocusInputSelectChoices()
             await buildProfile()
             await validateAll()
-            // buildFocusInputSelectChoices()
         }
 
         run()
