@@ -90,10 +90,13 @@
         }
 
         async function validateAll() {
-            document.getElementById("userProfileDiv").textContent = userProfile
-
-            validateAllReport = await MatchingEngine.validateAll(userProfile, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            console.log("userProfileTurtle", userProfileTurtle)
+            validateAllReport = await MatchingEngine.validateAll(userProfileTurtle, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
             console.log("validateAllReport", validateAllReport)
+
+            let tableEl = document.getElementById("reportTable")
+            tableEl.textContent = ""
 
             for (let report of validateAllReport.reports) {
                 let tr = document.createElement("tr")
@@ -103,7 +106,7 @@
                 td = document.createElement("td")
                 td.textContent = report.result
                 tr.appendChild(td)
-                document.getElementById("reportTable").appendChild(tr)
+                tableEl.appendChild(tr)
             }
 
             buildPrioritizedMissingDataList()
@@ -135,6 +138,7 @@
             prioritizedList.forEach((entry) => {
                 let spanEl = document.createElement("span")
                 spanEl.title = entry.usedInTitles.join("\n")
+                spanEl.style.color = "gray"
                 let textNode = document.createTextNode(entry.score + ": ")
                 spanEl.appendChild(textNode)
                 div.appendChild(spanEl)
@@ -146,7 +150,7 @@
                     let input = prompt("What is your value for: " + entry.label)
                     if (input !== null) {
                         console.log(entry.dfUri, "-->", input)
-                        // TODO
+                        addProfileEntry(entry.dfUri, input)
                     }
                 });
                 div.appendChild(a)
@@ -154,6 +158,36 @@
             });
             for (const elem of Array.from(document.getElementsByClassName("loadingDiv"))) {
                 elem.style.display = "none"
+            }
+        }
+
+        function addProfileEntry(dfUri, object) {
+            userProfile["ff:" + dfUri.split("#")[1]] = object
+            console.log("userProfile", userProfile)
+            localStorage.setItem("userProfile", JSON.stringify(userProfile))
+            buildProfile()
+            validateAll()
+        }
+
+        async function buildProfile() {
+            let div = document.getElementById("userProfileDiv")
+            div.textContent = ""
+            let table = document.createElement("table")
+            div.appendChild(table)
+
+            for (let [key, value] of Object.entries(userProfile)) {
+                if (key.startsWith("ff:")) key = "https://foerderfunke.org/default#" + key.slice(3)
+                let tr = document.createElement("tr")
+                table.appendChild(tr)
+                let td = document.createElement("td")
+                td = document.createElement("td")
+                td.textContent = metadata.df[key].label + ": "
+                td.style.color = "gray"
+                td.title = key
+                tr.appendChild(td)
+                td = document.createElement("td")
+                td.textContent = value
+                tr.appendChild(td)
             }
         }
 
@@ -166,6 +200,7 @@
 
             turtleMap = await loadFiles()
             await fetchMetadata()
+            await buildProfile()
             await validateAll()
             // buildFocusInputSelectChoices()
         }
