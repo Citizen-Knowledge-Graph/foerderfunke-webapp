@@ -34,9 +34,17 @@
         const element = document.getElementById("focusInputSelectElement")
         const focusInputSelect = new Choices(element, {
             removeItemButton: true,
-            position: "bottom",
-            placeholderValue: "No focus set --> prioritization of missing data points goes over all requirement profiles",
+            position: "bottom"
         });
+
+        focusInputSelect.passedElement.element.addEventListener("addItem", async function(event) {
+            focusInputSelect.hideDropdown()
+            await buildPrioritizedMissingDataList()
+        }, false)
+
+        focusInputSelect.passedElement.element.addEventListener("removeItem", async function(event) {
+            await buildPrioritizedMissingDataList()
+        }, false)
 
         let userProfile
         let turtleMap
@@ -83,6 +91,7 @@
                     categories[cat].push(rp.uri)
                 }
             }
+            metadata.categories = categories
             focusInputSelect.setChoices([
                 {
                     label: "Categories",
@@ -142,8 +151,23 @@
 
             let missingData = validateAllReport.missingUserInputsAggregated
 
+            let focusRPs = []
+            for (let focusItem of focusInputSelect.getValue(true)) {
+                if (metadata.categories[focusItem]) {
+                    focusRPs = focusRPs.concat(metadata.categories[focusItem])
+                } else {
+                    focusRPs.push(focusItem)
+                }
+            }
+
             for (let key of Object.keys(missingData)) {
                 let datafield = missingData[key]
+
+                let usedInRpUris = datafield.usedIn.map(usedInRP => usedInRP.rpUri)
+                if (focusRPs.length > 0 && !usedInRpUris.some(rpUri => focusRPs.includes(rpUri))) {
+                    continue
+                }
+
                 let usedInTitles = []
                 let lastMissingCounter = 0
                 for (let usedInRP of datafield.usedIn) {
