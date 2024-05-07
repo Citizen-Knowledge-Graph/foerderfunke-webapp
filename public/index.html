@@ -105,6 +105,18 @@
                 tr.appendChild(td)
                 td = document.createElement("td")
                 td.textContent = report.result
+                switch (report.result) {
+                    case "eligible":
+                        td.style.color = "green"
+                        td.style.fontWeight = "bold"
+                        break
+                    case "ineligible":
+                        td.style.color = "red"
+                        break
+                    case "undeterminable":
+                        td.style.color = "gray"
+                        break
+                }
                 tr.appendChild(td)
                 tableEl.appendChild(tr)
             }
