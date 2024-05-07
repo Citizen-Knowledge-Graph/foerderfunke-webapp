@@ -36,15 +36,10 @@
             placeholderValue: "No focus set --> prioritization of missing data points goes over all requirement profiles",
         });
 
+        let userProfile
         let turtleMap
         let metadata
         let validateAllReport
-
-        let userProfile = `
-@prefix ff: <https://foerderfunke.org/default#> .
-
-ff:mainPerson a ff:Citizen .
-        `
 
         async function fetchTextFile(relPath) {
             const response = await fetch(relPath)
@@ -163,6 +158,12 @@ ff:mainPerson a ff:Citizen .
         }
 
         async function run() {
+            // localStorage.clear()
+            if (localStorage.getItem("userProfile") === null) {
+                localStorage.setItem("userProfile", JSON.stringify({}));
+            }
+            userProfile = JSON.parse(localStorage.getItem("userProfile"))
+
             turtleMap = await loadFiles()
             await fetchMetadata()
             await validateAll()
