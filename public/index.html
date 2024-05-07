@@ -159,12 +159,12 @@
                 let a = document.createElement("a")
                 a.href = "#"
                 a.textContent = entry.label
-                a.addEventListener("click", function(event) {
+                a.addEventListener("click", async function(event) {
                     event.preventDefault()
                     let input = prompt("What is your value for: " + entry.label)
                     if (input !== null) {
                         console.log(entry.dfUri, "-->", input)
-                        addProfileEntry(entry.dfUri, input)
+                        await addProfileEntry(entry.dfUri, input)
                     }
                 });
                 div.appendChild(a)
@@ -200,6 +200,7 @@
             div.appendChild(table)
 
             for (let [key, value] of Object.entries(userProfile)) {
+                let keyShort = key
                 if (key.startsWith("ff:")) key = "https://foerderfunke.org/default#" + key.slice(3)
                 let tr = document.createElement("tr")
                 table.appendChild(tr)
@@ -211,6 +212,25 @@
                 tr.appendChild(td)
                 td = document.createElement("td")
                 td.textContent = value
+                td.style.textDecoration = "underline"
+                td.addEventListener("click", async function() {
+                    let input = prompt("Enter new value for: " + metadata.df[key].label)
+                    if (input !== null) {
+                        console.log(key, "-->", input)
+                        await addProfileEntry(key, input)
+                    }
+                })
+                tr.appendChild(td)
+                td = document.createElement("td")
+                td.textContent = "x"
+                td.style.color = "gray"
+                td.style.fontSize = "small"
+                td.addEventListener("click", async function() {
+                    delete userProfile[keyShort]
+                    localStorage.setItem("userProfile", JSON.stringify(userProfile))
+                    await buildProfile()
+                    await validateAll()
+                })
                 tr.appendChild(td)
             }
         }
