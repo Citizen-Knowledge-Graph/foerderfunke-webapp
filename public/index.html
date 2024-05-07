@@ -124,6 +124,11 @@
                 let tr = document.createElement("tr")
                 let td = document.createElement("td")
                 td.textContent = metadata.rp[report.rpUri]?.title ?? report.rpUri
+                if (!metadata.rp[report.rpUri] || metadata.rp[report.rpUri].categories.length === 0) {
+                    td.title = "No category info available"
+                } else {
+                    td.title = metadata.rp[report.rpUri].categories.map(cat => cat.split("#")[1]).join("\n")
+                }
                 tr.appendChild(td)
                 td = document.createElement("td")
                 td.textContent = report.result
