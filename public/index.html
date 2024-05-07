@@ -110,6 +110,8 @@
         }
 
         async function validateAll() {
+            await buildProfile()
+
             let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
             console.log("userProfileTurtle", userProfileTurtle)
             validateAllReport = await MatchingEngine.validateAll(userProfileTurtle, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
@@ -222,7 +224,6 @@
             userProfile[key] = value
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
-            await buildProfile()
             await validateAll()
         }
 
@@ -261,7 +262,6 @@
                 td.addEventListener("click", async function() {
                     delete userProfile[keyShort]
                     localStorage.setItem("userProfile", JSON.stringify(userProfile))
-                    await buildProfile()
                     await validateAll()
                 })
                 tr.appendChild(td)
@@ -272,7 +272,6 @@
             localStorage.clear()
             userProfile = {}
             localStorage.setItem("userProfile", JSON.stringify(userProfile));
-            await buildProfile()
             await validateAll()
         }
 
@@ -298,7 +297,6 @@
             turtleMap = await loadFiles()
             await fetchMetadata()
             buildFocusInputSelectChoices()
-            await buildProfile()
             await validateAll()
         }
 
