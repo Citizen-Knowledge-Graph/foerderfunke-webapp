@@ -18,6 +18,8 @@
 <body>
     <h3>User profile</h3>
     <div id="userProfileDiv"></div>
+    <br/>
+    <small><a href="#" onclick="clearUserProfile()">Reset</a></small> <small><a href="#" onclick="downloadUserProfileTurtle()">Export</a></small>
     <h3>Missing data points</h3>
     <div>Set a focus:</div>
     <br/>
@@ -193,7 +195,7 @@
 
         async function buildProfile() {
             let div = document.getElementById("userProfileDiv")
-            div.textContent = ""
+            div.innerHTML = ""
             let table = document.createElement("table")
             div.appendChild(table)
 
@@ -213,8 +215,28 @@
             }
         }
 
+        async function clearUserProfile() {
+            localStorage.clear()
+            userProfile = {}
+            localStorage.setItem("userProfile", JSON.stringify(userProfile));
+            await buildProfile()
+            await validateAll()
+        }
+
+        async function downloadUserProfileTurtle() {
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            let blob = new Blob([userProfileTurtle], {type: "text/turtle"})
+            let url = URL.createObjectURL(blob)
+            let a = document.createElement("a")
+            a.href = url
+            a.download = "user-profile.ttl"
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            window.URL.revokeObjectURL(url)
+        }
+
         async function run() {
-            // localStorage.clear()
             if (localStorage.getItem("userProfile") === null) {
                 localStorage.setItem("userProfile", JSON.stringify({}));
             }
