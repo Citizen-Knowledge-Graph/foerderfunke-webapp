@@ -210,6 +210,7 @@
                 }
                 prioritizedList.push({
                     dfUri: datafield.dfUri,
+                    objectHasClass: metadata.df[datafield.dfUri]?.objectHasClass,
                     label: metadata.df[datafield.dfUri]?.label ?? datafield.dfUri.split("#")[1],
                     score: datafield.usedIn.length + lastMissingCounter,
                     usedInTitles: usedInTitles
@@ -228,6 +229,9 @@
                 a.textContent = entry.label
                 a.addEventListener("click", async function(event) {
                     event.preventDefault()
+                    // if (entry.objectHasClass) {
+                    //    let input = prompt("How many " + entry.objectHasClass.split("#")[1] + " do you have?")
+                    // }
                     let input = prompt("What is your value for: " + entry.label)
                     if (input !== null) {
                         console.log(entry.dfUri, "-->", input)
