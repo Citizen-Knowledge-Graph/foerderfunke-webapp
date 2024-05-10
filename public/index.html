@@ -144,33 +144,31 @@
                         td.style.color = "gray"
                         break
                 }
-                td.addEventListener("click", async function() {
-                    let msg = ""
-                    switch (report.result) {
-                        case "eligible":
-                            if (report.inMemoryMaterializedTriples.length > 0) {
-                                msg += "Inferred data points:\n"
+                let msg = ""
+                switch (report.result) {
+                    case "eligible":
+                        if (report.inMemoryMaterializedTriples.length > 0) {
+                            msg += "Inferred data points:\n"
+                        }
+                        for (let triple of report.inMemoryMaterializedTriples) {
+                            msg += "- " + (metadata.df[triple.p] ? metadata.df[triple.p].label : triple.p.split("#")[1])
+                        }
+                        break
+                    case "ineligible":
+                        for (let violation of report.violations) {
+                            msg += violation.message + "\n"
+                        }
+                        break
+                    case "undeterminable":
+                        msg += "Missing data points:\n"
+                        for (let missing of report.missingUserInput) {
+                            if (metadata.df[missing.dfUri]) {
+                                msg += "- " + metadata.df[missing.dfUri].label + "\n"
                             }
-                            for (let triple of report.inMemoryMaterializedTriples) {
-                                msg += "- " + (metadata.df[triple.p] ? metadata.df[triple.p].label : triple.p.split("#")[1])
-                            }
-                            break
-                        case "ineligible":
-                            for (let violation of report.violations) {
-                                msg += violation.message + "\n"
-                            }
-                            break
-                        case "undeterminable":
-                            msg += "Missing data points:\n"
-                            for (let missing of report.missingUserInput) {
-                                if (metadata.df[missing.dfUri]) {
-                                    msg += "- " + metadata.df[missing.dfUri].label + "\n"
-                                }
-                            }
-                            break
-                    }
-                    alert(msg)
-                })
+                        }
+                        break
+                }
+                td.title = msg
                 tr.appendChild(td)
                 tableEl.appendChild(tr)
             }
