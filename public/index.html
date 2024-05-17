@@ -76,8 +76,10 @@
         }
 
         async function checkForUpdates() {
+            console.log("Checking for updates, old commit:", latestRPsRepoCommit)
             let checkLatestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
             if (checkLatestRPsRepoCommit === latestRPsRepoCommit) return
+            console.log("Update available, new commit:", checkLatestRPsRepoCommit)
             latestRPsRepoCommit = checkLatestRPsRepoCommit
             document.getElementById("update-banner").style.display = "block"
             let eligibleRPsBefore = [... eligibleRPs]
@@ -358,7 +360,7 @@
             await fetchMetadata()
             buildFocusInputSelectChoices()
             await validateAll()
-            setInterval(checkForUpdates, 60 * 1000)
+            setInterval(checkForUpdates, 10 * 1000)
         }
 
         run()
