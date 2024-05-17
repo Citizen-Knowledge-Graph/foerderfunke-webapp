@@ -95,6 +95,7 @@
             await validateAll()
             let newEligibleRPs = eligibleRPs.filter(rp => !eligibleRPsBefore.includes(rp))
             if (newEligibleRPs.length > 0) {
+                document.title = `(${newEligibleRPs.length}) ${document.title}`
                 alert("New eligible requirement profiles available: " + newEligibleRPs.map(rpUri => getRpTitle(rpUri)).join(", "))
             }
         }
