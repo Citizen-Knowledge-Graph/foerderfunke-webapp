@@ -57,7 +57,10 @@
         let eligibleRPs
 
         async function fetchTextFile(relPath) {
-            const response = await fetch(relPath)
+            const response = await fetch(relPath, {
+                method: "GET",
+                cache: "reload"
+            })
             return await response.text()
         }
 
@@ -68,6 +71,7 @@
                 "shacl": {}
             }
             let shaclFiles = await fetchTextFile("shacl-files.txt")
+            console.log("shacl-files.txt", shaclFiles)
             for (let filename of shaclFiles.split("\n")) {
                 if (!filename) continue
                 turtleMap.shacl[filename] = await fetchTextFile("requirement-profiles/shacl/" + filename)
