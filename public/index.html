@@ -49,11 +49,12 @@
             await buildPrioritizedMissingDataList()
         }, false)
 
-        let rpsRepoCommitAtPageLoadTime
+        let latestRPsRepoCommit
         let userProfile
         let turtleMap
         let metadata
         let validateAllReport
+        let eligibleRPs
 
         async function fetchTextFile(relPath) {
             const response = await fetch(relPath)
@@ -61,7 +62,7 @@
         }
 
         async function loadFiles() {
-            rpsRepoCommitAtPageLoadTime = await fetchTextFile("latest-rps-repo-commit.txt")
+            latestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
             turtleMap = {
                 "datafields": await fetchTextFile("requirement-profiles/datafields.ttl"),
                 "materialization": await fetchTextFile("requirement-profiles/materialization.ttl"),
@@ -75,9 +76,15 @@
         }
 
         async function checkForUpdates() {
-            let latestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
-            if (latestRPsRepoCommit !== rpsRepoCommitAtPageLoadTime) {
-                document.getElementById("update-banner").style.display = "block"
+            let checkLatestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
+            if (checkLatestRPsRepoCommit === latestRPsRepoCommit) return
+            latestRPsRepoCommit = checkLatestRPsRepoCommit
+            document.getElementById("update-banner").style.display = "block"
+            let eligibleRPsBefore = [... eligibleRPs]
+            await validateAll()
+            let newEligibleRPs = eligibleRPs.filter(rp => !eligibleRPsBefore.includes(rp))
+            if (newEligibleRPs.length > 0) {
+                alert("New eligible requirement profiles available: " + newEligibleRPs.map(rpUri => getRpTitle(rpUri)).join(", "))
             }
         }
 
@@ -87,6 +94,10 @@
                 rp: await MatchingEngine.extractRequirementProfilesMetadata(Object.values(turtleMap.shacl))
             }
             console.log("metadata", metadata)
+        }
+
+        function getRpTitle(rpUri) {
+            return metadata.rp[rpUri]?.title ?? rpUri
         }
 
         function buildFocusInputSelectChoices() {
@@ -130,11 +141,15 @@
 
             let tableEl = document.getElementById("reportTable")
             tableEl.textContent = ""
+            eligibleRPs = []
 
             for (let report of validateAllReport.reports) {
+                if (report.result === "eligible") {
+                    eligibleRPs.push(report.rpUri)
+                }
                 let tr = document.createElement("tr")
                 let td = document.createElement("td")
-                td.textContent = metadata.rp[report.rpUri]?.title ?? report.rpUri
+                td.textContent = getRpTitle(report.rpUri)
                 if (!metadata.rp[report.rpUri] || metadata.rp[report.rpUri].categories.length === 0) {
                     td.title = "No category info available"
                 } else {
@@ -340,10 +355,10 @@
             userProfile = JSON.parse(localStorage.getItem("userProfile"))
 
             await loadFiles()
-            setInterval(checkForUpdates, 60 * 1000)
             await fetchMetadata()
             buildFocusInputSelectChoices()
             await validateAll()
+            setInterval(checkForUpdates, 60 * 1000)
         }
 
         run()
