@@ -16,6 +16,9 @@
     </style>
 </head>
 <body>
+    <div id="update-banner" style="display: none; width: 100%; background-color: lightblue; color: darkblue; padding: 5px; text-align: center;">
+        Update available, reload the page to get the latest version.
+    </div>
     <h3>User profile</h3>
     <div id="userProfileDiv"></div>
     <br/>
@@ -46,6 +49,7 @@
             await buildPrioritizedMissingDataList()
         }, false)
 
+        let rpsRepoCommitAtPageLoadTime
         let userProfile
         let turtleMap
         let metadata
@@ -57,7 +61,8 @@
         }
 
         async function loadFiles() {
-            let turtleMap = {
+            rpsRepoCommitAtPageLoadTime = await fetchTextFile("latest-rps-repo-commit.txt")
+            turtleMap = {
                 "datafields": await fetchTextFile("requirement-profiles/datafields.ttl"),
                 "materialization": await fetchTextFile("requirement-profiles/materialization.ttl"),
                 "shacl": {}
@@ -67,7 +72,13 @@
                 if (!filename) continue
                 turtleMap.shacl[filename] = await fetchTextFile("requirement-profiles/shacl/" + filename)
             }
-            return turtleMap
+        }
+
+        async function checkForUpdates() {
+            let latestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
+            if (latestRPsRepoCommit !== rpsRepoCommitAtPageLoadTime) {
+                document.getElementById("update-banner").style.display = "block"
+            }
         }
 
         async function fetchMetadata() {
@@ -328,7 +339,8 @@
             }
             userProfile = JSON.parse(localStorage.getItem("userProfile"))
 
-            turtleMap = await loadFiles()
+            await loadFiles()
+            setInterval(checkForUpdates, 60 * 1000)
             await fetchMetadata()
             buildFocusInputSelectChoices()
             await validateAll()
