@@ -177,12 +177,7 @@
                 let msg = ""
                 switch (report.result) {
                     case "eligible":
-                        if (report.inMemoryMaterializedTriples.length > 0) {
-                            msg += "Inferred data points:\n"
-                        }
-                        for (let triple of report.inMemoryMaterializedTriples) {
-                            msg += "- " + (metadata.df[triple.p] ? metadata.df[triple.p].label : triple.p.split("#")[1])
-                        }
+                        msg += JSON.stringify(report.materializationReport) // TODO
                         break
                     case "ineligible":
                         for (let violation of report.violations) {
@@ -362,7 +357,7 @@
             await parseTurtleFiles()
             buildFocusInputSelectChoices()
             await validateAll()
-            setInterval(checkForUpdates, 10 * 1000)
+            setInterval(checkForUpdates, 60 * 1000)
         }
 
         run()
