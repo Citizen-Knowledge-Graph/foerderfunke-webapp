@@ -22,6 +22,8 @@
     <h3>User profile</h3>
     <div id="userProfileDiv"></div>
     <br/>
+    <select style="display: none" id="dfDropdown"></select>
+    <br/>
     <small><a href="#" onclick="clearUserProfile()">Reset</a></small> <small><a href="#" onclick="downloadUserProfileTurtle()">Export</a></small>
     <h3>Missing data points</h3>
     <div>Set a focus:</div>
@@ -79,6 +81,20 @@
                 df: await MatchingEngine.extractDatafieldsMetadata(turtleMap.datafields),
                 rp: await MatchingEngine.extractRequirementProfilesMetadata(Object.values(turtleMap.shacl))
             }
+
+            const selectEl = document.getElementById("dfDropdown")
+            selectEl.innerHTML = ""
+            for (let df of Object.values(metadata.df)) {
+                const optionEl = document.createElement("option")
+                optionEl.value = df.uri
+                optionEl.textContent = df.label
+                selectEl.appendChild(optionEl);
+            }
+            selectEl.addEventListener("change", function(event) {
+                const selectedValue = event.target.value;
+                // TODO
+            });
+
             console.log("metadata", metadata)
         }
 
