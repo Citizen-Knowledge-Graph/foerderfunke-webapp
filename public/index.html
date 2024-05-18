@@ -71,7 +71,6 @@
                 "shacl": {}
             }
             let shaclFiles = await fetchTextFile("shacl-files.txt")
-            console.log("shacl-files.txt", shaclFiles)
             for (let filename of shaclFiles.split("\n")) {
                 if (!filename) continue
                 turtleMap.shacl[filename] = await fetchTextFile("requirement-profiles/shacl/" + filename)
@@ -252,9 +251,12 @@
                 a.textContent = entry.label
                 a.addEventListener("click", async function(event) {
                     event.preventDefault()
-                    // if (entry.objectHasClass) {
-                    //    let input = prompt("How many " + entry.objectHasClass.split("#")[1] + " do you have?")
-                    // }
+                    if (entry.objectHasClass) {
+                        if (confirm("Do you want to add a " + metadata.df[entry.objectHasClass].label + "?")) {
+                            // TODO
+                        }
+                        return
+                    }
                     let input = prompt("What is your value for: " + entry.label)
                     if (input !== null) {
                         console.log(entry.dfUri, "-->", input)
