@@ -24,7 +24,9 @@
     <br/>
     <select style="display: none" id="dfDropdown"></select>
     <br/>
-    <small><a href="#" onclick="clearUserProfile()">Reset</a></small> <small><a href="#" onclick="downloadUserProfileTurtle()">Export</a></small>
+    <small><a href="#" onclick="clearUserProfile()">Reset</a></small>
+    <small><a href="#" onclick="downloadUserProfileTurtle()">Export</a></small>
+    <small><a href="#" onclick="showUserProfileTurtle()">Show Turtle</a></small>
     <h3>Missing data points</h3>
     <div>Set a focus:</div>
     <br/>
@@ -363,6 +365,11 @@
             a.click()
             document.body.removeChild(a)
             window.URL.revokeObjectURL(url)
+        }
+
+        async function showUserProfileTurtle() {
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            alert(userProfileTurtle)
         }
 
         async function run() {
