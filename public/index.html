@@ -279,7 +279,8 @@
                     event.preventDefault()
                     if (entry.objectHasClass) {
                         if (confirm("Do you want to add a " + metadata.df[entry.objectHasClass].label + "?")) {
-                            // TODO
+                            console.log("Adding an object class instantiation for " + entry.dfUri)
+                            await addProfileEntry(entry.dfUri, [{}])
                         }
                         return
                     }
@@ -333,6 +334,9 @@
                 td.title = key
                 tr.appendChild(td)
                 td = document.createElement("td")
+                if (Array.isArray(value)) {
+                    value = JSON.stringify(value) // TODO
+                }
                 td.textContent = value
                 td.style.textDecoration = "underline"
                 td.addEventListener("click", async function() {
