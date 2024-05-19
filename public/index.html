@@ -202,6 +202,15 @@
                 }
                 td.title = msg
                 tr.appendChild(td)
+                td = document.createElement("td")
+                td.style.fontSize = "x-small"
+                td.style.color = "silver"
+                td.innerHTML = "&nbsp;&nbsp;&nbsp;already getting this"
+                td.addEventListener("click", async function() {
+                    alert("TODO: " + report.rpUri)
+                    // TODO
+                })
+                tr.appendChild(td)
                 tableEl.appendChild(tr)
             }
 
