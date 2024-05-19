@@ -177,29 +177,21 @@
                 tr.appendChild(td)
                 td = document.createElement("td")
                 td.textContent = report.result
+                let msg = ""
                 switch (report.result) {
                     case "eligible":
                         td.style.color = "green"
                         td.style.fontWeight = "bold"
-                        break
-                    case "ineligible":
-                        td.style.color = "red"
-                        break
-                    case "undeterminable":
-                        td.style.color = "gray"
-                        break
-                }
-                let msg = ""
-                switch (report.result) {
-                    case "eligible":
                         msg += JSON.stringify(report.materializationReport) // TODO
                         break
                     case "ineligible":
+                        td.style.color = "red"
                         for (let violation of report.violations) {
                             msg += violation.message + "\n"
                         }
                         break
                     case "undeterminable":
+                        td.style.color = "gray"
                         msg += "Missing data points:\n"
                         for (let missing of report.missingUserInput) {
                             if (metadata.df[missing.dfUri]) {
