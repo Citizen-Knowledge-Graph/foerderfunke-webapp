@@ -68,14 +68,6 @@
         let validateAllReport
         let eligibleRPs
 
-        async function fetchTextFile(relPath) {
-            const response = await fetch(relPath, {
-                method: "GET",
-                cache: "reload"
-            })
-            return await response.text()
-        }
-
         async function parseTurtleFiles() {
             turtleMap = {
                 "datafields": await fetchTextFile("requirement-profiles/datafields.ttl"),
@@ -106,27 +98,7 @@
             });
 
             console.log("metadata", metadata)
-        }
-
-        async function checkForUpdates() {
-            console.log("Checking for updates, old commit:", latestRPsRepoCommit)
-            let checkLatestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
-            if (checkLatestRPsRepoCommit === latestRPsRepoCommit) return
-            console.log("Update available, new commit:", checkLatestRPsRepoCommit)
-            latestRPsRepoCommit = checkLatestRPsRepoCommit
-            document.getElementById("update-banner").style.display = "block"
-            let eligibleRPsBefore = [... eligibleRPs]
-            await parseTurtleFiles()
-            await validateAll()
-            let newEligibleRPs = eligibleRPs.filter(rp => !eligibleRPsBefore.includes(rp))
-            if (newEligibleRPs.length > 0) {
-                document.title = `(${newEligibleRPs.length}) ${document.title}`
-                alert("New eligible requirement profiles available: " + newEligibleRPs.map(rpUri => getRpTitle(rpUri)).join(", "))
-            }
-        }
-
-        function getRpTitle(rpUri) {
-            return metadata.rp[rpUri]?.title ?? rpUri
+            buildFocusInputSelectChoices()
         }
 
         function buildFocusInputSelectChoices() {
@@ -160,8 +132,26 @@
             ])
         }
 
-        async function validateAll() {
-            await buildProfile()
+        async function checkForNewRepoCommits() {
+            console.log("Checking for updates, old commit:", latestRPsRepoCommit)
+            let checkLatestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
+            // TODO also check foerderfunke-webapp latest commit
+            if (checkLatestRPsRepoCommit === latestRPsRepoCommit) return
+            console.log("Update available, new commit:", checkLatestRPsRepoCommit)
+            latestRPsRepoCommit = checkLatestRPsRepoCommit
+            document.getElementById("update-banner").style.display = "block"
+            let eligibleRPsBefore = [... eligibleRPs]
+            await parseTurtleFiles()
+            await update()
+            let newEligibleRPs = eligibleRPs.filter(rp => !eligibleRPsBefore.includes(rp))
+            if (newEligibleRPs.length > 0) {
+                document.title = `(${newEligibleRPs.length}) ${document.title}`
+                alert("New eligible requirement profiles available: " + newEligibleRPs.map(rpUri => getRpTitle(rpUri)).join(", "))
+            }
+        }
+
+        async function update() {
+            await buildProfileTable()
 
             let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
             console.log("userProfileTurtle", userProfileTurtle)
@@ -312,10 +302,10 @@
             userProfile[key] = value
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
-            await validateAll()
+            await update()
         }
 
-        async function buildProfile() {
+        async function buildProfileTable() {
             let div = document.getElementById("userProfileDiv")
             div.innerHTML = ""
             let table = document.createElement("table")
@@ -354,17 +344,44 @@
                 td.addEventListener("click", async function() {
                     delete userProfile[keyShort]
                     localStorage.setItem("userProfile", JSON.stringify(userProfile))
-                    await validateAll()
+                    await update()
                 })
                 tr.appendChild(td)
             }
+        }
+
+        async function run() {
+            if (localStorage.getItem("userProfile") === null) {
+                localStorage.setItem("userProfile", JSON.stringify({}));
+            }
+            userProfile = JSON.parse(localStorage.getItem("userProfile"))
+            latestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
+            await parseTurtleFiles()
+            await update()
+            setInterval(checkForNewRepoCommits, 60 * 1000)
+        }
+
+        run()
+
+        // ----- util functions ----
+
+        function getRpTitle(rpUri) {
+            return metadata.rp[rpUri]?.title ?? rpUri
+        }
+
+        async function fetchTextFile(relPath) {
+            const response = await fetch(relPath, {
+                method: "GET",
+                cache: "reload"
+            })
+            return await response.text()
         }
 
         async function clearUserProfile() {
             localStorage.clear()
             userProfile = {}
             localStorage.setItem("userProfile", JSON.stringify(userProfile));
-            await validateAll()
+            await update()
         }
 
         async function downloadUserProfileTurtle() {
@@ -384,22 +401,6 @@
             let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
             alert(userProfileTurtle)
         }
-
-        async function run() {
-            if (localStorage.getItem("userProfile") === null) {
-                localStorage.setItem("userProfile", JSON.stringify({}));
-            }
-            userProfile = JSON.parse(localStorage.getItem("userProfile"))
-
-            latestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
-            await parseTurtleFiles()
-            buildFocusInputSelectChoices()
-            await validateAll()
-            setInterval(checkForUpdates, 60 * 1000)
-        }
-
-        run()
-
     </script>
 </body>
 </html>
