@@ -155,7 +155,7 @@
         async function validateAll() {
             await buildProfile()
 
-            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
             console.log("userProfileTurtle", userProfileTurtle)
             validateAllReport = await MatchingEngine.validateAll(userProfileTurtle, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
             console.log("validateAllReport", validateAllReport)
@@ -355,7 +355,7 @@
         }
 
         async function downloadUserProfileTurtle() {
-            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
             let blob = new Blob([userProfileTurtle], {type: "text/turtle"})
             let url = URL.createObjectURL(blob)
             let a = document.createElement("a")
@@ -368,7 +368,7 @@
         }
 
         async function showUserProfileTurtle() {
-            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
             alert(userProfileTurtle)
         }
 
