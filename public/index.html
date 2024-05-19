@@ -13,6 +13,14 @@
         .loadingDiv {
             color: gray;
         }
+        .framed-table {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        .framed-table th, .framed-table td {
+            border: 1px solid black;
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
@@ -310,6 +318,7 @@
             let div = document.getElementById("userProfileDiv")
             div.innerHTML = ""
             let table = document.createElement("table")
+            table.className = "framed-table"
             div.appendChild(table)
 
             for (let [key, value] of Object.entries(userProfile)) {
