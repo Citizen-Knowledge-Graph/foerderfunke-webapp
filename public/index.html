@@ -64,8 +64,6 @@
 
         let latestRPsRepoCommit
         let userProfile
-        let root // of the user profile tree
-        let maxDepth = 0 // of the user profile tree
         let turtleMap
         let metadata
         let validateAllReport
@@ -136,8 +134,7 @@
         }
 
         async function update() {
-            buildUserProfileTree()
-            await buildProfileTable()
+            // await buildProfileTable()
 
             let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
             console.log("userProfileTurtle", userProfileTurtle)
@@ -290,96 +287,6 @@
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
             await update()
-        }
-
-        function buildProfileTableRecursively(node, table) {
-            let tr = node.predicate === "root" ? document.createElement("tr") : buildRow(table)
-            let tds = buildColumns(maxDepth + 3, tr)
-            let xIndex = maxDepth + 2
-            let indexOfThisChildWithinParent = node.parent ? node.parent.children.indexOf(node) : 0
-            tds[node.depth > 0 ? node.depth - 1 : node.depth].textContent = dfShortUriToLabel(node.predicate)
-            tds[xIndex].textContent = "x"
-            tds[xIndex].style = "color: gray; font-size: small"
-            tds[xIndex].addEventListener("click", async function() {
-                // this delete will not work if its more than 2 levels deep TODO
-                delete userProfile[node.predicate].splice(indexOfThisChildWithinParent, 1)
-                localStorage.setItem("userProfile", JSON.stringify(userProfile))
-                await update()
-            })
-            for (let datafield of node.datafields) {
-                tr = buildRow(table)
-                tds = buildColumns(maxDepth + 3, tr)
-                let label = dfShortUriToLabel(datafield.predicate)
-                tds[node.depth].textContent = label
-                tds[node.depth + 1].textContent = datafield.object
-                tds[node.depth + 1].style.color = "blue"
-                tds[node.depth + 1].addEventListener("click", async function() {
-                    let input = prompt("Enter new value for: " + label)
-                    if (input !== null) {
-                        // TODO
-                        // console.log(key, "-->", input)
-                        // await addProfileEntry(key, input)
-                    }
-                })
-                tds[xIndex].textContent = "x"
-                tds[xIndex].style = "color: gray; font-size: small"
-                tds[xIndex].addEventListener("click", async function() {
-                    if (node.depth === 0) {
-                        delete userProfile[datafield.predicate]
-                    } else {
-                        // this delete will not work if its more than 2 levels deep TODO
-                        delete userProfile[node.predicate][indexOfThisChildWithinParent][datafield.predicate];
-                    }
-                    localStorage.setItem("userProfile", JSON.stringify(userProfile))
-                    await update()
-                })
-            }
-            for (let child of node.children) {
-                buildProfileTableRecursively(child, table)
-            }
-        }
-
-        async function buildProfileTable() {
-            let div = document.getElementById("userProfileDiv")
-            div.innerHTML = ""
-            let table = document.createElement("table")
-            table.className = "framed-table"
-            div.appendChild(table)
-            buildProfileTableRecursively(root, table)
-        }
-
-        class Node { // = Subject
-            constructor(predicate, parent, depth) {
-                this.predicate = predicate
-                this.parent = parent
-                this.depth = depth
-                this.datafields = [] // predicate + object
-                if (parent) parent.children.push(this)
-                this.children = []
-            }
-        }
-
-        function buildUserProfileTreeRecursively(node, jsonNode, depth) {
-            if (depth > maxDepth) maxDepth = depth
-            for (let [predicate, object] of Object.entries(jsonNode)) {
-                if (Array.isArray(object)) {
-                    for (let arrayElement of object) {
-                        let child = new Node(predicate, node, depth + 1)
-                        buildUserProfileTreeRecursively(child, arrayElement, depth + 1)
-                    }
-                    continue
-                }
-                node.datafields.push({ predicate: predicate, object: object })
-            }
-        }
-
-        function buildUserProfileTree() {
-            userProfile = JSON.parse(localStorage.getItem("userProfile"))
-            root = new Node("root", null, 0)
-            maxDepth = 0
-            buildUserProfileTreeRecursively(root, userProfile, 0)
-            console.log("user profile tree root", root)
-            console.log("max depth", maxDepth)
         }
 
         async function run() {
