@@ -51,7 +51,7 @@
         const focusInputSelect = new Choices(element, {
             removeItemButton: true,
             position: "bottom"
-        });
+        })
 
         focusInputSelect.passedElement.element.addEventListener("addItem", async function() {
             focusInputSelect.hideDropdown()
@@ -62,8 +62,10 @@
             await buildPrioritizedMissingDataList()
         }, false)
 
-        let latestRPsRepoCommit
+        const EMPTY_PROFILE = { "@id": "ff:mainPerson", "@type": "ff:Citizen" }
         let userProfile
+        let maxDepth = 0
+        let latestRPsRepoCommit
         let turtleMap
         let metadata
         let validateAllReport
@@ -91,12 +93,12 @@
                 const optionEl = document.createElement("option")
                 optionEl.value = df.uri
                 optionEl.textContent = df.label
-                selectEl.appendChild(optionEl);
+                selectEl.appendChild(optionEl)
             }
             selectEl.addEventListener("change", function(event) {
-                const selectedValue = event.target.value;
+                const selectedValue = event.target.value
                 // TODO
-            });
+            })
 
             console.log("metadata", metadata)
             buildFocusInputSelectChoices()
@@ -134,9 +136,9 @@
         }
 
         async function update() {
-            // await buildProfileTable()
+            await buildProfileTable()
 
-            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
             console.log("userProfileTurtle", userProfileTurtle)
             validateAllReport = await MatchingEngine.validateAll(userProfileTurtle, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
             console.log("validateAllReport", validateAllReport)
@@ -263,10 +265,10 @@
                         console.log(entry.dfUri, "-->", input)
                         await addProfileEntry(entry.dfUri, input)
                     }
-                });
+                })
                 div.appendChild(a)
                 div.appendChild(document.createElement("br"))
-            });
+            })
             for (const elem of Array.from(document.getElementsByClassName("loadingDiv"))) {
                 elem.style.display = "none"
             }
@@ -289,11 +291,68 @@
             await update()
         }
 
-        async function run() {
-            // localStorage.removeItem("userProfile")
-            if (localStorage.getItem("userProfile") === null) {
-                localStorage.setItem("userProfile", JSON.stringify({}));
+        function buildProfileTableRecursively(node, depth, table) {
+            for (let [predicate, objectOrArray] of Object.entries(node)) {
+                if (predicate.startsWith("@")) continue
+                if (!Array.isArray(objectOrArray)) {
+                    let tds = buildRowAndColumns(table)
+                    let label = dfShortUriToLabel(predicate)
+                    tds[depth].textContent = label
+                    tds[depth + 1].textContent = objectOrArray
+                    tds[depth + 1].addEventListener("click", async function() {
+                        let input = prompt(`Enter new value for ${label}`)
+                        if (input !== null) {
+                            // TODO
+                        }
+                    })
+                    tds[maxDepth + 2].textContent = "x"
+                    tds[maxDepth + 2].addEventListener("click", async function() {
+                        if (confirm("Do you want to remove this entry?")) {
+                            // TODO
+                        }
+                    })
+                    continue
+                }
+                for (let arrayElement of objectOrArray) {
+                    let tds = buildRowAndColumns(table)
+                    let label = dfShortUriToLabel(predicate)
+                    tds[depth].textContent = label
+                    tds[maxDepth + 2].textContent = "x"
+                    tds[maxDepth + 2].addEventListener("click", async function() {
+                        if (confirm(`Do you want to remove this entire ${label}?`)) {
+                            // TODO
+                        }
+                    })
+                    buildProfileTableRecursively(arrayElement, depth + 1, table)
+                }
             }
+        }
+
+        // this is needed to know the correct number of columns in the profile table in advance
+        function determineDepthOfProfileTreeRecursively(jsonNode, depth) {
+            if (depth > maxDepth) maxDepth = depth
+            for (let objectOrArray of Object.values(jsonNode)) {
+                if (!Array.isArray(objectOrArray)) continue
+                for (let arrayElement of objectOrArray) determineDepthOfProfileTreeRecursively(arrayElement, depth + 1)
+            }
+        }
+
+        function buildProfileTable() {
+            let div = document.getElementById("userProfileDiv")
+            div.innerHTML = ""
+            let table = document.createElement("table")
+            table.className = "framed-table"
+            div.appendChild(table)
+            maxDepth = 0
+            determineDepthOfProfileTreeRecursively(userProfile, 0)
+            buildProfileTableRecursively(userProfile, 0, table)
+        }
+
+        async function run() {
+            if (localStorage.getItem("userProfile") === null) {
+                localStorage.setItem("userProfile", JSON.stringify(EMPTY_PROFILE))
+            }
+            userProfile = JSON.parse(localStorage.getItem("userProfile"))
             latestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
             await parseTurtleFiles()
             await update()
@@ -328,15 +387,11 @@
             return metadata.df[key]?.label ?? shortKey
         }
 
-        function buildRow(table) {
+        function buildRowAndColumns(table) {
             let tr = document.createElement("tr")
             table.appendChild(tr)
-            return tr
-        }
-
-        function buildColumns(count, tr) {
             let tds = []
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < maxDepth + 3; i++) {
                 let td = document.createElement("td")
                 tr.appendChild(td)
                 tds.push(td)
@@ -358,8 +413,8 @@
 
         async function clearUserProfile() {
             localStorage.clear()
-            userProfile = {}
-            localStorage.setItem("userProfile", JSON.stringify(userProfile));
+            userProfile = EMPTY_PROFILE
+            localStorage.setItem("userProfile", JSON.stringify(userProfile))
             await update()
         }
 
@@ -369,7 +424,7 @@
         }
 
         async function downloadUserProfileTurtle() {
-            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
             let blob = new Blob([userProfileTurtle], {type: "text/turtle"})
             let url = URL.createObjectURL(blob)
             let a = document.createElement("a")
@@ -382,7 +437,7 @@
         }
 
         async function showUserProfileTurtle() {
-            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile, turtleMap.datafields)
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
             alert(userProfileTurtle)
         }
     </script>
