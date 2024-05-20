@@ -135,24 +135,6 @@
             ])
         }
 
-        async function checkForNewRepoCommits() {
-            console.log("Checking for updates, old commit:", latestRPsRepoCommit)
-            let checkLatestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
-            // TODO also check foerderfunke-webapp latest commit
-            if (checkLatestRPsRepoCommit === latestRPsRepoCommit) return
-            console.log("Update available, new commit:", checkLatestRPsRepoCommit)
-            latestRPsRepoCommit = checkLatestRPsRepoCommit
-            document.getElementById("update-banner").style.display = "block"
-            let eligibleRPsBefore = [... eligibleRPs]
-            await parseTurtleFiles()
-            await update()
-            let newEligibleRPs = eligibleRPs.filter(rp => !eligibleRPsBefore.includes(rp))
-            if (newEligibleRPs.length > 0) {
-                document.title = `(${newEligibleRPs.length}) ${document.title}`
-                alert("New eligible requirement profiles available: " + newEligibleRPs.map(rpUri => getRpTitle(rpUri)).join(", "))
-            }
-        }
-
         async function update() {
             buildUserProfileTree()
             await buildProfileTable()
@@ -414,6 +396,24 @@
         run()
 
         // ----- utils ----
+
+        async function checkForNewRepoCommits() {
+            console.log("Checking for updates, old commit:", latestRPsRepoCommit)
+            let checkLatestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
+            // TODO also check foerderfunke-webapp latest commit
+            if (checkLatestRPsRepoCommit === latestRPsRepoCommit) return
+            console.log("Update available, new commit:", checkLatestRPsRepoCommit)
+            latestRPsRepoCommit = checkLatestRPsRepoCommit
+            document.getElementById("update-banner").style.display = "block"
+            let eligibleRPsBefore = [... eligibleRPs]
+            await parseTurtleFiles()
+            await update()
+            let newEligibleRPs = eligibleRPs.filter(rp => !eligibleRPsBefore.includes(rp))
+            if (newEligibleRPs.length > 0) {
+                document.title = `(${newEligibleRPs.length}) ${document.title}`
+                alert("New eligible requirement profiles available: " + newEligibleRPs.map(rpUri => getRpTitle(rpUri)).join(", "))
+            }
+        }
 
         function dfShortUriToLabel(key) {
             let shortKey = key
