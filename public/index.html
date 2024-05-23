@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>FörderFunke</title>
-    <script src="./bundle.js"></script>
-    <link rel="stylesheet" href="./choices.min.css" />
-    <script src="./choices.min.js"></script>
+    <script src="./assets/bundle.js"></script>
+    <link rel="stylesheet" href="./assets/choices.min.css" />
+    <script src="./assets/choices.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,14 +73,14 @@
 
         async function parseTurtleFiles() {
             turtleMap = {
-                "datafields": await fetchTextFile("requirement-profiles/datafields.ttl"),
-                "materialization": await fetchTextFile("requirement-profiles/materialization.ttl"),
+                "datafields": await fetchAsset("requirement-profiles/datafields.ttl"),
+                "materialization": await fetchAsset("requirement-profiles/materialization.ttl"),
                 "shacl": {}
             }
-            let shaclFiles = await fetchTextFile("shacl-files.txt")
+            let shaclFiles = await fetchAsset("shacl-files.txt")
             for (let filename of shaclFiles.split("\n")) {
                 if (!filename) continue
-                turtleMap.shacl[filename] = await fetchTextFile("requirement-profiles/shacl/" + filename)
+                turtleMap.shacl[filename] = await fetchAsset("requirement-profiles/shacl/" + filename)
             }
             metadata = {
                 df: await MatchingEngine.extractDatafieldsMetadata(turtleMap.datafields),
@@ -407,7 +407,7 @@
                 localStorage.setItem("userProfile", JSON.stringify(EMPTY_PROFILE))
             }
             userProfile = JSON.parse(localStorage.getItem("userProfile"))
-            latestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
+            latestRPsRepoCommit = await fetchAsset("latest-rps-repo-commit.txt")
             await parseTurtleFiles()
             await update()
             setInterval(checkForNewRepoCommits, 60 * 1000)
@@ -419,7 +419,7 @@
 
         async function checkForNewRepoCommits() {
             console.log("Checking for updates, old commit:", latestRPsRepoCommit)
-            let checkLatestRPsRepoCommit = await fetchTextFile("latest-rps-repo-commit.txt")
+            let checkLatestRPsRepoCommit = await fetchAsset("latest-rps-repo-commit.txt")
             // TODO also check foerderfunke-webapp latest commit
             if (checkLatestRPsRepoCommit === latestRPsRepoCommit) return
             console.log("Update available, new commit:", checkLatestRPsRepoCommit)
@@ -463,8 +463,8 @@
             return metadata.rp[rpUri]?.title ?? rpUri
         }
 
-        async function fetchTextFile(relPath) {
-            const response = await fetch(relPath, {
+        async function fetchAsset(relPath) {
+            const response = await fetch("assets/" + relPath, {
                 method: "GET",
                 cache: "reload"
             })
