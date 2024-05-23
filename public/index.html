@@ -302,17 +302,15 @@
             return finalPath + ": " + entry.label
         }
 
-        function searchNodeRecursively(node, predicateValue, objectValue, action) {
+        function searchNodeByEntryPredicateRecursively(node, predicateValue, action) {
             for (let [predicate, objectOrArray] of Object.entries(node)) {
-                if (objectValue && objectOrArray === objectValue) { // e.g. ff:child0 as the value, key would be @id
+                if (predicate === predicateValue) { // e.g. ff:hasChild as the key
                     action(node)
-                }
-                if (predicateValue && predicate === predicateValue) { // e.g. ff:hasChild as the key
-                    action(node)
+                    return
                 }
                 if (Array.isArray(objectOrArray)) {
                     for (let arrayEl of objectOrArray) {
-                        searchNodeRecursively(arrayEl, predicateValue, objectValue, action)
+                        searchNodeByEntryPredicateRecursively(arrayEl, predicateValue, action)
                     }
                 }
             }
@@ -330,7 +328,7 @@
             let shortObjectClassUri = shortenLongUri(objectClass)
             let newInstanceUri = shortObjectClassUri.toLowerCase()
             let nodeFound = false
-            searchNodeRecursively(userProfile, predicate, null, (node) => {
+            searchNodeByEntryPredicateRecursively(userProfile, predicate, (node) => {
                 nodeFound = true
                 node[predicate].push({ "@id": newInstanceUri + node[predicate].length, "@type": shortObjectClassUri }) // verify that this works TODO
             })
