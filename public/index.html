@@ -364,6 +364,19 @@
             })
         }
 
+        async function buildRemovalCell(td, sKey, pKey) {
+            td.textContent = "x"
+            td.addEventListener("click", async function() {
+                if (confirm("Do you want to remove this entry?")) {
+                    console.log("Removing entry:", sKey, pKey)
+                    searchSubjectNodeRecursively(userProfile, sKey, (node) => {
+                        delete node[pKey]
+                    })
+                    await finalizeProfileChanges()
+                }
+            })
+        }
+
         function buildProfileTableRecursively(node, depth, table) {
             let subject = node["@id"]
             for (let [predicate, objectOrArray] of Object.entries(node)) {
@@ -382,24 +395,13 @@
                             await finalizeProfileChanges()
                         }
                     })
-                    tds[maxDepth + 2].textContent = "x"
-                    tds[maxDepth + 2].addEventListener("click", async function() {
-                        if (confirm("Do you want to remove this entry?")) {
-                            // TODO
-                        }
-                    })
+                    buildRemovalCell(tds[maxDepth + 2], subject, predicate)
                     continue
                 }
                 for (let arrayElement of objectOrArray) {
                     let tds = buildRowAndColumns(table)
-                    let label = dfShortUriToLabel(predicate)
-                    tds[depth].textContent = label
-                    tds[maxDepth + 2].textContent = "x"
-                    tds[maxDepth + 2].addEventListener("click", async function() {
-                        if (confirm(`Do you want to remove this entire ${label}?`)) {
-                            // TODO
-                        }
-                    })
+                    tds[depth].textContent = dfShortUriToLabel(predicate)
+                    buildRemovalCell(tds[maxDepth + 2], subject, predicate)
                     buildProfileTableRecursively(arrayElement, depth + 1, table)
                 }
             }
