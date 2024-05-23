@@ -336,10 +336,25 @@
         }
 
         async function finalizeProfileChanges() {
-            // profile validation / maybe materialization suggestions too? TODO
+            if (!await validateUserProfile()) return
+
+            // materialization suggestions too? TODO
+
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
             await update()
+        }
+
+        async function validateUserProfile() {
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            let report = await MatchingEngine.validateUserProfile(userProfileTurtle, turtleMap.datafields)
+            if (!report.conforms) {
+                console.log("User profile validation violations:", report.violations)
+                // pretty print violations TODO
+                alert("Your profile is not valid: " + JSON.stringify(report.violations))
+                return false
+            }
+            return true
         }
 
         function searchSubjectNodeRecursively(node, sKey, action) {
@@ -418,14 +433,16 @@
         }
 
         async function run() {
+            latestRPsRepoCommit = await fetchAsset("latest-rps-repo-commit.txt")
+            setInterval(checkForNewRepoCommits, 60 * 1000)
+            await parseTurtleFiles()
+
             if (localStorage.getItem("userProfile") === null) {
                 localStorage.setItem("userProfile", JSON.stringify(EMPTY_PROFILE))
             }
             userProfile = JSON.parse(localStorage.getItem("userProfile"))
-            latestRPsRepoCommit = await fetchAsset("latest-rps-repo-commit.txt")
-            await parseTurtleFiles()
+            if (!await validateUserProfile()) return
             await update()
-            setInterval(checkForNewRepoCommits, 60 * 1000)
         }
 
         run()
