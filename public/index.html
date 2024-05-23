@@ -219,7 +219,6 @@
             }
 
             for (let datafield of Object.values(missingData)) {
-
                 let usedInRpUris = datafield.usedIn.map(usedInRP => usedInRP.rpUri)
                 if (focusRPs.length > 0 && !usedInRpUris.some(rpUri => focusRPs.includes(rpUri))) {
                     continue
@@ -278,7 +277,6 @@
 
         function searchNodeRecursively(node, predicateValue, objectValue, action) {
             for (let [predicate, objectOrArray] of Object.entries(node)) {
-                console.log("looking at ", objectOrArray, objectValue)
                 if (objectValue && objectOrArray === objectValue) { // e.g. ff:child0 as the value, key would be @id
                     action(node)
                 }
@@ -303,14 +301,15 @@
 
         function instantiateNewObjectClassUnderSubject(subject, predicate, objectClass) {
             let shortObjectClassUri = shortenLongUri(objectClass)
+            let newInstanceUri = shortObjectClassUri.toLowerCase()
+            let nodeFound = false
             searchNodeRecursively(userProfile, predicate, null, (node) => {
-                let newInstanceUri = shortObjectClassUri.toLowerCase()
-                if (node) {
-                    node[predicate].push({ "@id": newInstanceUri + node[predicate].length, "@type": shortObjectClassUri }) // verify that this works TODO
-                } else { // e.g. no ff:hasChild array yet
-                    addEntryToSubject(subject, predicate, [{ "@id": newInstanceUri + "0", "@type": shortObjectClassUri }])
-                }
+                nodeFound = true
+                node[predicate].push({ "@id": newInstanceUri + node[predicate].length, "@type": shortObjectClassUri }) // verify that this works TODO
             })
+            if (!nodeFound) { // e.g. no ff:hasChild array yet
+                addEntryToSubject(subject, predicate, [{ "@id": newInstanceUri + "0", "@type": shortObjectClassUri }])
+            }
         }
 
         async function finalizeProfileChanges() {
