@@ -249,7 +249,7 @@
                 div.appendChild(spanEl)
                 let a = document.createElement("a")
                 a.href = "#"
-                a.textContent = entry.label
+                a.textContent = collectSubjectClassLabelsAlongPath(entry)
                 a.addEventListener("click", async function(event) {
                     event.preventDefault()
                     if (entry.objectHasClass) {
@@ -273,6 +273,32 @@
             for (const elem of Array.from(document.getElementsByClassName("loadingDiv"))) {
                 elem.style.display = "none"
             }
+        }
+
+        function collectSubjectClassLabelsAlongPath(entry) { // prioritizedListEntry
+            if (shortenLongUri(entry.subject) === "ff:mainPerson") {
+                return entry.label
+            }
+            let sUri = shortenLongUri(entry.subject)
+            let path = ""
+            let finalPath
+            function recurse(node, arrIndex, sUri, path) {
+                if (node["@type"] !== "ff:Citizen") path += ", " + metadata.df[expandShortUri(node["@type"])].label + " " + arrIndex
+                for (let objectOrArray of Object.values(node)) {
+                    if (objectOrArray === sUri) {
+                        finalPath = path.substring(1)
+                    }
+                    if (Array.isArray(objectOrArray)) {
+                        for (let i = 0; i < objectOrArray.length; i++) {
+                            let arrayEl = objectOrArray[i]
+                            recurse(arrayEl, i, sUri, path)
+                        }
+                    }
+                }
+
+            }
+            recurse(userProfile, 0, sUri, path)
+            return finalPath + ": " + entry.label
         }
 
         function searchNodeRecursively(node, predicateValue, objectValue, action) {
@@ -447,7 +473,6 @@
 
         async function clearUserProfile() {
             localStorage.clear()
-            userProfile = EMPTY_PROFILE
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
             await update()
         }
