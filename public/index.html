@@ -472,9 +472,8 @@
         }
 
         async function clearUserProfile() {
-            localStorage.clear()
-            userProfile = EMPTY_PROFILE
-            localStorage.setItem("userProfile", JSON.stringify(userProfile))
+            localStorage.setItem("userProfile", JSON.stringify(EMPTY_PROFILE))
+            userProfile = JSON.parse(localStorage.getItem("userProfile"))
             await update()
         }
 
