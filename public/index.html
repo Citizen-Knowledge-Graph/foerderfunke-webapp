@@ -346,18 +346,42 @@
             await update()
         }
 
+        function searchSubjectNodeRecursively(node, sKey, action) {
+            if (node["@id"] === sKey) {
+                action(node)
+                return
+            }
+            for (let objectOrArray of Object.values(node)) {
+                if (Array.isArray(objectOrArray)) {
+                    for (let arrayEl of objectOrArray) {
+                        searchSubjectNodeRecursively(arrayEl, sKey, action)
+                    }
+                }
+            }
+        }
+
+        function updateEntryValue(sKey, pKey, newValue) {
+            searchSubjectNodeRecursively(userProfile, sKey, (node) => {
+                node[pKey] = newValue
+            })
+        }
+
         function buildProfileTableRecursively(node, depth, table) {
+            let subject = node["@id"]
             for (let [predicate, objectOrArray] of Object.entries(node)) {
                 if (predicate.startsWith("@")) continue
                 if (!Array.isArray(objectOrArray)) {
                     let tds = buildRowAndColumns(table)
                     let label = dfShortUriToLabel(predicate)
                     tds[depth].textContent = label
+                    tds[depth].title = predicate
                     tds[depth + 1].textContent = objectOrArray
                     tds[depth + 1].addEventListener("click", async function() {
                         let input = prompt(`Enter new value for ${label}`)
                         if (input !== null) {
-                            // TODO
+                            console.log("Changing entry value:", subject, predicate, "-->", input)
+                            updateEntryValue(subject, predicate, input)
+                            await finalizeProfileChanges()
                         }
                     })
                     tds[maxDepth + 2].textContent = "x"
