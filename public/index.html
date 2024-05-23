@@ -321,7 +321,7 @@
         function addEntryToSubject(subject, predicate, objectValue) {
             subject = "ff:" + subject.split("#")[1]
             predicate = "ff:" + predicate.split("#")[1]
-            searchNodeRecursively(userProfile, null, subject, (node) => {
+            searchSubjectNodeRecursively(userProfile, subject, (node) => {
                 node[predicate] = objectValue
             })
         }
