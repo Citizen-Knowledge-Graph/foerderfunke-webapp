@@ -255,15 +255,17 @@
                     event.preventDefault()
                     if (entry.objectHasClass) {
                         if (confirm("Do you want to add a " + metadata.df[entry.objectHasClass].label + "?")) {
-                            console.log("Adding an object class instantiation for " + entry.dfUri)
-                            // await addProfileEntry(entry.dfUri, [{}])
+                            console.log("Adding object class instantiation:", entry.subject, entry.dfUri, "-->", entry.objectHasClass)
+                            instantiateNewObjectClassUnderSubject(entry.subject, entry.dfUri, entry.objectHasClass)
+                            await finalizeProfileChanges()
                         }
                         return
                     }
                     let input = prompt("What is your value for: " + entry.label)
                     if (input !== null) {
-                        console.log(entry.subject, entry.dfUri, "-->", input)
-                        await addProfileEntry(entry.subject, entry.dfUri, input)
+                        console.log("Adding entry:", entry.subject, entry.dfUri, "-->", input)
+                        addEntryToSubject(entry.subject, entry.dfUri, input)
+                        await finalizeProfileChanges()
                     }
                 })
                 div.appendChild(a)
@@ -274,35 +276,45 @@
             }
         }
 
-        function searchSubjectNodeRecursively(node, sKey, action) {
-            for (let objectOrArray of Object.values(node)) {
-                if (objectOrArray === sKey) {
+        function searchNodeRecursively(node, predicateValue, objectValue, action) {
+            for (let [predicate, objectOrArray] of Object.entries(node)) {
+                console.log("looking at ", objectOrArray, objectValue)
+                if (objectValue && objectOrArray === objectValue) { // e.g. ff:child0 as the value, key would be @id
                     action(node)
-                    break
+                }
+                if (predicateValue && predicate === predicateValue) { // e.g. ff:hasChild as the key
+                    action(node)
                 }
                 if (Array.isArray(objectOrArray)) {
                     for (let arrayEl of objectOrArray) {
-                        searchSubjectNodeRecursively(arrayEl, sKey, action)
+                        searchNodeRecursively(arrayEl, predicateValue, objectValue, action)
                     }
                 }
             }
         }
 
-        async function addProfileEntry(subject, dfUri, value) {
-            let sKey = "ff:" + subject.split("#")[1]
-            let pKey = "ff:" + dfUri.split("#")[1]
-            searchSubjectNodeRecursively(userProfile, sKey, (node) => {
-                node[pKey] = value
+        function addEntryToSubject(subject, predicate, objectValue) {
+            subject = "ff:" + subject.split("#")[1]
+            predicate = "ff:" + predicate.split("#")[1]
+            searchNodeRecursively(userProfile, null, subject, (node) => {
+                node[predicate] = objectValue
             })
-            /*let result = await MatchingEngine.validateSingleDatafieldValue({ [pKey]: value }, turtleMap.datafields)
-            if (!result.conforms) {
-                let msgs = "\n"
-                for (let violation of result.violations) {
-                    msgs += violation.message + "\n"
+        }
+
+        function instantiateNewObjectClassUnderSubject(subject, predicate, objectClass) {
+            let shortObjectClassUri = shortenLongUri(objectClass)
+            searchNodeRecursively(userProfile, predicate, null, (node) => {
+                let newInstanceUri = shortObjectClassUri.toLowerCase()
+                if (node) {
+                    node[predicate].push({ "@id": newInstanceUri + node[predicate].length, "@type": shortObjectClassUri }) // verify that this works TODO
+                } else { // e.g. no ff:hasChild array yet
+                    addEntryToSubject(subject, predicate, [{ "@id": newInstanceUri + "0", "@type": shortObjectClassUri }])
                 }
-                alert(value + " is an invalid input for " + metadata.df[dfUri].label + ": " + msgs)
-                return
-            }*/
+            })
+        }
+
+        async function finalizeProfileChanges() {
+            // profile validation / maybe materialization suggestions too? TODO
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
             await update()
@@ -399,9 +411,15 @@
         }
 
         function dfShortUriToLabel(key) {
-            let shortKey = key
-            if (key.startsWith("ff:")) key = "https://foerderfunke.org/default#" + key.slice(3)
-            return metadata.df[key]?.label ?? shortKey
+            return metadata.df[expandShortUri(key)]?.label ?? key
+        }
+
+        function expandShortUri(uri) {
+            return uri.startsWith("ff:") ? "https://foerderfunke.org/default#" + uri.slice(3) : uri
+        }
+
+        function shortenLongUri(uri) {
+            return uri.startsWith("http") ? "ff:" + uri.split("#")[1] : uri
         }
 
         function buildRowAndColumns(table) {
