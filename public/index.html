@@ -319,9 +319,7 @@
         function addEntryToSubject(subject, predicate, objectValue) {
             subject = "ff:" + subject.split("#")[1]
             predicate = "ff:" + predicate.split("#")[1]
-            searchSubjectNodeRecursively(userProfile, subject, (node) => {
-                node[predicate] = objectValue
-            })
+            searchSubjectNodeRecursively(userProfile, subject, (node) => node[predicate] = objectValue)
         }
 
         function instantiateNewObjectClassUnderSubject(subject, predicate, objectClass) {
@@ -358,20 +356,12 @@
             }
         }
 
-        function updateEntryValue(sKey, pKey, newValue) {
-            searchSubjectNodeRecursively(userProfile, sKey, (node) => {
-                node[pKey] = newValue
-            })
-        }
-
         async function buildRemovalCell(td, sKey, pKey) {
             td.textContent = "x"
             td.addEventListener("click", async function() {
                 if (confirm("Do you want to remove this entry?")) {
                     console.log("Removing entry:", sKey, pKey)
-                    searchSubjectNodeRecursively(userProfile, sKey, (node) => {
-                        delete node[pKey]
-                    })
+                    searchSubjectNodeRecursively(userProfile, sKey, (node) => delete node[pKey])
                     await finalizeProfileChanges()
                 }
             })
@@ -391,7 +381,7 @@
                         let input = prompt(`Enter new value for ${label}`)
                         if (input !== null) {
                             console.log("Changing entry value:", subject, predicate, "-->", input)
-                            updateEntryValue(subject, predicate, input)
+                            searchSubjectNodeRecursively(userProfile, subject, (node) => node[predicate] = input)
                             await finalizeProfileChanges()
                         }
                     })
