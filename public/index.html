@@ -193,8 +193,9 @@
                 td.style.color = "silver"
                 td.innerHTML = "&nbsp;&nbsp;&nbsp;already getting this"
                 td.addEventListener("click", async function() {
-                    alert("TODO: " + report.rpUri)
-                    // TODO
+                    let newInstanceUri = instantiateNewObjectClassUnderSubject("ff:mainPerson", "ff:hasCompliedRequirementProfile", "ff:CompliedRequirementProfile")
+                    addEntryToSubject(newInstanceUri, "ff:hasRpUri", report.rpUri)
+                    await finalizeProfileChanges()
                 })
                 tr.appendChild(td)
                 tableEl.appendChild(tr)
@@ -328,11 +329,14 @@
             let nodeFound = false
             searchNodeByEntryPredicateRecursively(userProfile, predicate, (node) => {
                 nodeFound = true
-                node[predicate].push({ "@id": newInstanceUri + node[predicate].length, "@type": shortObjectClassUri }) // verify that this works TODO
+                newInstanceUri = newInstanceUri + node[predicate].length
+                node[predicate].push({ "@id": newInstanceUri, "@type": shortObjectClassUri }) // verify that this works TODO
             })
             if (!nodeFound) { // e.g. no ff:hasChild array yet
-                addEntryToSubject(subject, predicate, [{ "@id": newInstanceUri + "0", "@type": shortObjectClassUri }])
+                newInstanceUri = newInstanceUri + "0"
+                addEntryToSubject(subject, predicate, [{ "@id": newInstanceUri, "@type": shortObjectClassUri }])
             }
+            return newInstanceUri
         }
 
         async function finalizeProfileChanges() {
@@ -391,7 +395,7 @@
                     let label = dfShortUriToLabel(predicate)
                     tds[depth].textContent = label
                     tds[depth].title = predicate
-                    tds[depth + 1].textContent = objectOrArray
+                    tds[depth + 1].textContent = shortenLongUri(objectOrArray)
                     tds[depth + 1].addEventListener("click", async function() {
                         let input = prompt(`Enter new value for ${label}`)
                         if (input !== null) {
@@ -406,6 +410,7 @@
                 for (let arrayElement of objectOrArray) {
                     let tds = buildRowAndColumns(table)
                     tds[depth].textContent = dfShortUriToLabel(predicate)
+                    // this will delete all array elements of the same type at the moment TODO fix
                     buildRemovalCell(tds[maxDepth + 2], subject, predicate)
                     buildProfileTableRecursively(arrayElement, depth + 1, table)
                 }
