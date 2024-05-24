@@ -315,8 +315,8 @@
         }
 
         function addEntryToSubject(subject, predicate, objectValue) {
-            if (subject.startsWith("http")) subject = "ff:" + subject.split("#")[1]
-            if (predicate.startsWith("http")) predicate = "ff:" + predicate.split("#")[1]
+            subject = shortenLongUri(subject)
+            predicate = shortenLongUri(predicate)
             console.log("Adding entry:", subject, predicate, "-->", objectValue)
             searchSubjectNodeRecursively(userProfile, subject, (node) => node[predicate] = objectValue)
         }
