@@ -255,7 +255,6 @@
                     event.preventDefault()
                     if (entry.objectHasClass) {
                         if (confirm("Do you want to add a " + metadata.df[entry.objectHasClass].label + "?")) {
-                            console.log("Adding object class instantiation:", entry.subject, entry.dfUri, "-->", entry.objectHasClass)
                             instantiateNewObjectClassUnderSubject(entry.subject, entry.dfUri, entry.objectHasClass)
                             await finalizeProfileChanges()
                         }
@@ -263,7 +262,6 @@
                     }
                     let input = prompt("What is your value for: " + entry.label)
                     if (input !== null) {
-                        console.log("Adding entry:", entry.subject, entry.dfUri, "-->", input)
                         addEntryToSubject(entry.subject, entry.dfUri, input)
                         await finalizeProfileChanges()
                     }
@@ -317,12 +315,14 @@
         }
 
         function addEntryToSubject(subject, predicate, objectValue) {
-            subject = "ff:" + subject.split("#")[1]
-            predicate = "ff:" + predicate.split("#")[1]
+            if (subject.startsWith("http")) subject = "ff:" + subject.split("#")[1]
+            if (predicate.startsWith("http")) predicate = "ff:" + predicate.split("#")[1]
+            console.log("Adding entry:", subject, predicate, "-->", objectValue)
             searchSubjectNodeRecursively(userProfile, subject, (node) => node[predicate] = objectValue)
         }
 
         function instantiateNewObjectClassUnderSubject(subject, predicate, objectClass) {
+            console.log("Adding object class instantiation:", subject, predicate, "-->", objectClass)
             let shortObjectClassUri = shortenLongUri(objectClass)
             let newInstanceUri = shortObjectClassUri.toLowerCase()
             let nodeFound = false
