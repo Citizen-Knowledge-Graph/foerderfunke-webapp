@@ -342,7 +342,10 @@
         async function finalizeProfileChanges() {
             if (!await validateUserProfile()) return
 
-            // materialization suggestions too? TODO
+            let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+            let materializationReport = await MatchingEngine.checkUserProfileForMaterializations(userProfileTurtle, turtleMap.materialization)
+            console.log("materializationReport", materializationReport)
+            // TODO
 
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
