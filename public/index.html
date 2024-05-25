@@ -360,7 +360,27 @@
             let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
             let materializationReport = await MatchingEngine.checkUserProfileForMaterializations(userProfileTurtle, turtleMap.materialization)
             console.log("materializationReport", materializationReport)
-            // TODO
+
+            let msg = ""
+            let triples = []
+            for (let round of materializationReport.rounds) {
+                for (let [ruleUri, entry] of Object.entries(round)) {
+                    let ruleLocalName = ruleUri.split("#")[1]
+                    msg += "Via materialization rule '" + ruleLocalName + "' (input: "
+                    msg += entry.input ? metadata.df[entry.input].label : "?"
+                    msg += " output: " + (entry.output ? metadata.df[entry.output].label : "?") + "):\n"
+                    for (let triple of entry.triples) {
+                        msg += shortenLongUri(triple.s) + " " + shortenLongUri(triple.p) + " " + shortenLongUri(triple.o) + "\n"
+                    }
+                    triples = triples.concat(entry.triples)
+                }
+            }
+            if (msg && confirm("The following entries where inferred from your existing entries:\n\n" + msg + "\nWould you like to add them to your profile?")) {
+                for (let triple of triples) {
+                    addEntryToSubject(triple.s, triple.p, triple.o)
+                }
+                if (!await validateUserProfile()) return
+            }
 
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
