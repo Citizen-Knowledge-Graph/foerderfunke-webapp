@@ -197,6 +197,19 @@
                 td.addEventListener("click", async function() {
                     let newInstanceUri = instantiateNewObjectClassUnderSubject("ff:mainPerson", "ff:hasCompliedRequirementProfile", "ff:CompliedRequirementProfile")
                     addEntryToSubject(newInstanceUri, "ff:hasRpUri", report.rpUri)
+
+                    let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
+                    let inferenceReport = await MatchingEngine.inferNewUserDataFromCompliedRPs(userProfileTurtle, turtleMap.shacl[report.rpUri])
+                    let msg = ""
+                    for (let triple of inferenceReport.inferred) {
+                        msg += shortenLongUri(triple.subject) + " " + shortenLongUri(triple.predicate) + " " + shortenLongUri(triple.object) + "\n"
+                    }
+                    if (confirm("These entries were inferred based on your already complied requirement profile '" + metadata.rp[report.rpUri].title
+                        + "':\n\n" + msg + "\nWould you like to add them to your profile?")) {
+                        for (let triple of inferenceReport.inferred) {
+                            addEntryToSubject(triple.subject, triple.predicate, triple.object)
+                        }
+                    }
                     await finalizeProfileChanges()
                 })
                 tr.appendChild(td)
