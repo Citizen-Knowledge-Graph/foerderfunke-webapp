@@ -400,6 +400,7 @@
                     tds[depth].textContent = label
                     tds[depth].title = predicate
                     tds[depth + 1].textContent = determineLabelForObjectValue(objectOrArray)
+                    tds[depth + 1].title = objectOrArray
                     tds[depth + 1].addEventListener("click", async function() {
                         let input = prompt(`Enter new value for ${label}`)
                         if (input !== null) {
@@ -414,6 +415,7 @@
                 for (let arrayElement of objectOrArray) {
                     let tds = buildRowAndColumns(table)
                     tds[depth].textContent = dfShortUriToLabel(predicate)
+                    tds[depth].title = predicate
                     // this will delete all array elements of the same type at the moment TODO fix
                     buildRemovalCell(tds[maxDepth + 2], subject, predicate)
                     buildProfileTableRecursively(arrayElement, depth + 1, table)
