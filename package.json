@@ -13,7 +13,7 @@
     "cleanRepo": "rm -rf public/assets/requirement-profiles/.git*",
     "copyBundle": "cp ./node_modules/@foerderfunke/matching-engine/dist/bundle.js public/assets/",
     "copyDependencies": "cp ./node_modules/choices.js/public/assets/styles/choices.min.css public/assets/ && cp ./node_modules/choices.js/public/assets/scripts/choices.min.js public/assets/",
-    "listShaclFiles": "ls public/assets/requirement-profiles/shacl > public/assets/shacl-files.txt",
+    "listShaclFiles": "node buildShaclList.js",
     "collectAssets": "npm run clean && npm run cloneRepo && npm run extractCommit && npm run cleanRepo && npm run copyBundle && npm run copyDependencies && npm run listShaclFiles"
   }
 }
