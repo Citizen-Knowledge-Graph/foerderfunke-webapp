@@ -399,7 +399,7 @@
                     let label = dfShortUriToLabel(predicate)
                     tds[depth].textContent = label
                     tds[depth].title = predicate
-                    tds[depth + 1].textContent = shortenLongUri(objectOrArray)
+                    tds[depth + 1].textContent = determineLabelForObjectValue(objectOrArray)
                     tds[depth + 1].addEventListener("click", async function() {
                         let input = prompt(`Enter new value for ${label}`)
                         if (input !== null) {

@@ -29,6 +29,12 @@ function shortenLongUri(uri) {
     return uri.startsWith("http") ? "ff:" + uri.split("#")[1] : uri
 }
 
+function determineLabelForObjectValue(str) {
+    if (metadata.df[str]) return metadata.df[str].label
+    if (metadata.rp[str]) return metadata.rp[str].title
+    return shortenLongUri(str)
+}
+
 function buildRowAndColumns(table) {
     let tr = document.createElement("tr")
     table.appendChild(tr)
