@@ -208,15 +208,19 @@
                     let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
                     let inferenceReport = await MatchingEngine.inferNewUserDataFromCompliedRPs(userProfileTurtle, turtleMap.shacl[report.rpUri])
                     let msg = ""
+                    let triples = []
                     for (let triple of inferenceReport.triples) {
-                        msg += shortenLongUri(triple.s) + " " + shortenLongUri(triple.p) + " " + shortenLongUri(triple.o) + "\n"
-                    }
-                    if (confirm("These entries were inferred based on your already complied requirement profile '" + metadata.rp[report.rpUri].title
-                        + "':\n\n" + msg + "\nWould you like to add them to your profile?")) {
-                        for (let triple of inferenceReport.triples) {
-                            addEntryToSubject(triple.s, triple.p, triple.o)
+                        if (!triple.deferredBy) {
+                            msg += shortenLongUri(triple.s) + " " + shortenLongUri(triple.p) + " " + shortenLongUri(triple.o) + "\n"
+                            triples.push(triple)
                         }
                     }
+                    if (triples.length > 0 && confirm("These entries were inferred based on your already complied requirement profile '" + metadata.rp[report.rpUri].title
+                        + "':\n\n" + msg + "\nWould you like to add them to your profile?")) {
+                        for (let triple of triples) {
+                            addEntryToSubject(triple.s, triple.p, triple.o)
+                        }
+                    } // else {}: should we offer to add deferments if they choose not to? But it won't pop up again anyway since inferNewUserDataFromCompliedRPs() is not called regularly
                     await finalizeProfileChanges()
                 })
                 tr.appendChild(td)
@@ -301,9 +305,7 @@
                 spanEl.style.color = "silver"
                 spanEl.innerHTML = "&nbsp;&nbsp;defer this"
                 spanEl.addEventListener("click", async function() {
-                    let newInstanceUri = instantiateNewObjectClassUnderSubject("ff:mainPerson", "ff:hasDeferred", "ff:Deferment")
-                    addEntryToSubject(newInstanceUri, "rdf:subject", entry.subject)
-                    addEntryToSubject(newInstanceUri, "rdf:predicate", entry.dfUri)
+                    addDeferment(entry.subject, entry.dfUri)
                     await finalizeProfileChanges()
                 })
                 div.appendChild(spanEl)
@@ -383,6 +385,7 @@
 
             let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
             let materializationReport = await MatchingEngine.checkUserProfileForMaterializations(userProfileTurtle, turtleMap.materialization)
+            // run inferNewUserDataFromCompliedRPs() here too?
             console.log("materializationReport", materializationReport)
 
             let msg = ""
@@ -394,18 +397,27 @@
                     msg += entry.input ? metadata.df[entry.input].label : "?"
                     msg += " output: " + (entry.output ? metadata.df[entry.output].label : "?") + "):\n"
                     for (let triple of entry.triples) {
-                        msg += shortenLongUri(triple.s) + " " + shortenLongUri(triple.p) + " " + shortenLongUri(triple.o) + "\n"
+                        if (!triple.deferredBy) {
+                            msg += shortenLongUri(triple.s) + " " + shortenLongUri(triple.p) + " " + shortenLongUri(triple.o) + "\n"
+                            triples.push(triple)
+                        }
                     }
-                    triples = triples.concat(entry.triples)
                 }
             }
-            if (msg && confirm("The following entries where inferred from your existing entries:\n\n" + msg + "\nWould you like to add them to your profile?")) {
-                for (let triple of triples) {
-                    addEntryToSubject(triple.s, triple.p, triple.o)
+            if (triples.length > 0) {
+                if (confirm("The following entries where inferred from your existing entries:\n\n" + msg + "\nWould you like to add them to your profile?")) {
+                    for (let triple of triples) {
+                        addEntryToSubject(triple.s, triple.p, triple.o)
+                    }
+                    if (!await validateUserProfile()) return
+                } else {
+                    if (!confirm("May I ask you later again to add these? ")) {
+                        for (let triple of triples) {
+                            addDeferment(triple.s, triple.p)
+                        }
+                    }
                 }
-                if (!await validateUserProfile()) return
             }
-
             console.log("userProfile", userProfile)
             localStorage.setItem("userProfile", JSON.stringify(userProfile))
             await update()

@@ -44,6 +44,12 @@ function determineLabelForTableEntries(str) {
     return str
 }
 
+function addDeferment(subject, predicate) {
+    let newInstanceUri = instantiateNewObjectClassUnderSubject("ff:mainPerson", "ff:hasDeferred", "ff:Deferment")
+    addEntryToSubject(newInstanceUri, "rdf:subject", subject)
+    addEntryToSubject(newInstanceUri, "rdf:predicate", predicate)
+}
+
 function buildRowAndColumns(table) {
     let tr = document.createElement("tr")
     table.appendChild(tr)
