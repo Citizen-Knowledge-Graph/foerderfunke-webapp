@@ -264,10 +264,9 @@
                 let textNode = document.createTextNode(entry.score + ": ")
                 spanEl.appendChild(textNode)
                 div.appendChild(spanEl)
-                let a = document.createElement("a")
-                a.href = "#"
-                a.textContent = collectSubjectClassLabelsAlongPath(entry)
-                a.addEventListener("click", async function(event) {
+                spanEl = document.createElement("a")
+                spanEl.textContent = collectSubjectClassLabelsAlongPath(entry)
+                spanEl.addEventListener("click", async function(event) {
                     event.preventDefault()
                     if (entry.objectHasClass) {
                         if (confirm("Do you want to add a " + metadata.df[entry.objectHasClass].label + "?")) {
@@ -282,7 +281,7 @@
                         await finalizeProfileChanges()
                     }
                 })
-                div.appendChild(a)
+                div.appendChild(spanEl)
                 spanEl = document.createElement("span")
                 spanEl.style.fontSize = "x-small"
                 spanEl.style.color = "silver"
