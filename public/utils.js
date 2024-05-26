@@ -29,10 +29,19 @@ function shortenLongUri(uri) {
     return uri.startsWith("http") ? "ff:" + uri.split("#")[1] : uri
 }
 
-function determineLabelForObjectValue(str) {
-    if (metadata.df[str]) return metadata.df[str].label
-    if (metadata.rp[str]) return metadata.rp[str].title
-    return shortenLongUri(str)
+const MANUAL_KEY_TO_LABEL = {
+    "ff:mainPerson": "Du",
+    "rdf:subject": "Subjekt",
+    "rdf:predicate": "Datenfeld",
+}
+
+function determineLabelForTableEntries(str) {
+    let expanded = expandShortUri(str)
+    if (metadata.df[expanded]) return metadata.df[expanded].label
+    if (metadata.rp[expanded]) return metadata.rp[expanded].title
+    str = shortenLongUri(str)
+    if (MANUAL_KEY_TO_LABEL[str]) return MANUAL_KEY_TO_LABEL[str]
+    return str
 }
 
 function buildRowAndColumns(table) {

@@ -283,6 +283,17 @@
                     }
                 })
                 div.appendChild(a)
+                spanEl = document.createElement("span")
+                spanEl.style.fontSize = "x-small"
+                spanEl.style.color = "silver"
+                spanEl.innerHTML = "&nbsp;&nbsp;defer this"
+                spanEl.addEventListener("click", async function() {
+                    let newInstanceUri = instantiateNewObjectClassUnderSubject("ff:mainPerson", "ff:hasDeferred", "ff:Deferment")
+                    addEntryToSubject(newInstanceUri, "rdf:subject", entry.subject)
+                    addEntryToSubject(newInstanceUri, "rdf:predicate", entry.dfUri)
+                    await finalizeProfileChanges()
+                })
+                div.appendChild(spanEl)
                 div.appendChild(document.createElement("br"))
             })
             for (const elem of Array.from(document.getElementsByClassName("loadingDiv"))) {
@@ -430,10 +441,10 @@
                 if (predicate.startsWith("@")) continue
                 if (!Array.isArray(objectOrArray)) {
                     let tds = buildRowAndColumns(table)
-                    let label = dfShortUriToLabel(predicate)
+                    let label = determineLabelForTableEntries(predicate)
                     tds[depth].textContent = label
                     tds[depth].title = predicate
-                    tds[depth + 1].textContent = determineLabelForObjectValue(objectOrArray)
+                    tds[depth + 1].textContent = determineLabelForTableEntries(objectOrArray)
                     tds[depth + 1].title = objectOrArray
                     tds[depth + 1].addEventListener("click", async function() {
                         let input = prompt(`Enter new value for ${label}`)
