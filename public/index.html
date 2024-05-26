@@ -157,6 +157,13 @@
                 let tr = document.createElement("tr")
                 let td = document.createElement("td")
                 td.textContent = getRpTitle(report.rpUri)
+                searchNodeByEntryPredicateRecursively(userProfile, "ff:hasCompliedRequirementProfile", (node) => {
+                    node["ff:hasCompliedRequirementProfile"].forEach(rp => {
+                        if (rp["ff:hasRpUri"] === report.rpUri) {
+                            td.style.textDecoration = "line-through"
+                        }
+                    })
+                })
                 if (!metadata.rp[report.rpUri] || metadata.rp[report.rpUri].categories.length === 0) {
                     td.title = "No category info available"
                 } else {
@@ -266,6 +273,13 @@
                 div.appendChild(spanEl)
                 spanEl = document.createElement("a")
                 spanEl.textContent = collectSubjectClassLabelsAlongPath(entry)
+                searchNodeByEntryPredicateRecursively(userProfile, "ff:hasDeferred", (node) => {
+                    node["ff:hasDeferred"].forEach(deferment => {
+                        if (deferment["rdf:subject"] === entry.subject && deferment["rdf:predicate"] === entry.dfUri) {
+                            spanEl.style.textDecoration = "line-through"
+                        }
+                    })
+                })
                 spanEl.addEventListener("click", async function(event) {
                     event.preventDefault()
                     if (entry.objectHasClass) {
