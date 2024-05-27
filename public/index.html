@@ -164,6 +164,9 @@
                         }
                     })
                 })
+                if (report.containsDeferredMissingUserInput) {
+                    td.style.textDecoration = "line-through"
+                }
                 if (!metadata.rp[report.rpUri] || metadata.rp[report.rpUri].categories.length === 0) {
                     td.title = "No category info available"
                 } else {
