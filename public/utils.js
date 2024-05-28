@@ -1,4 +1,32 @@
 
+function searchNodeByEntryPredicateRecursively(node, predicateValue, action) {
+    for (let [predicate, objectOrArray] of Object.entries(node)) {
+        if (predicate === predicateValue) { // e.g. ff:hasChild as the key
+            action(node)
+            return
+        }
+        if (Array.isArray(objectOrArray)) {
+            for (let arrayEl of objectOrArray) {
+                searchNodeByEntryPredicateRecursively(arrayEl, predicateValue, action)
+            }
+        }
+    }
+}
+
+function searchSubjectNodeRecursively(node, sKey, action) {
+    if (node["@id"] === sKey) {
+        action(node)
+        return
+    }
+    for (let objectOrArray of Object.values(node)) {
+        if (Array.isArray(objectOrArray)) {
+            for (let arrayEl of objectOrArray) {
+                searchSubjectNodeRecursively(arrayEl, sKey, action)
+            }
+        }
+    }
+}
+
 async function checkForNewRepoCommits() {
     console.log("Checking for updates, old commit:", latestRPsRepoCommit)
     let checkLatestRPsRepoCommit = await fetchAsset("latest-rps-repo-commit.txt")
