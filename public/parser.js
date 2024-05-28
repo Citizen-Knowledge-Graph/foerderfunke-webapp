@@ -15,20 +15,7 @@ async function parseTurtleFiles() {
         df: await MatchingEngine.extractDatafieldsMetadata(turtleMap.datafields),
         rp: await MatchingEngine.extractRequirementProfilesMetadata(Object.values(turtleMap.shacl))
     }
-
-    const selectEl = document.getElementById("dfDropdown")
-    selectEl.innerHTML = ""
-    for (let df of Object.values(metadata.df)) {
-        const optionEl = document.createElement("option")
-        optionEl.value = df.uri
-        optionEl.textContent = df.label
-        selectEl.appendChild(optionEl)
-    }
-    selectEl.addEventListener("change", function(event) {
-        const selectedValue = event.target.value
-        // TODO
-    })
-
     console.log("metadata", metadata)
+
     buildFocusInputSelectChoices()
 }

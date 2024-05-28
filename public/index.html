@@ -37,7 +37,13 @@
     <h3>User profile</h3>
     <div id="userProfileDiv"></div>
     <br/>
-    <select style="display: none" id="dfDropdown"></select>
+    <small id="addNewEntryLink"><a href="#" onclick="handleAddNewEntry()">Add new entry</a></small>
+    <div id="manualProfileEntryGroup" style="display: none">
+        <select id="subjectDropdown"></select>
+        <select id="dfDropdown"></select>
+        <input type="button" value="Add" onclick="addManualProfileEntry()"/>
+        <br/>
+    </div>
     <br/>
     <small><a href="#" onclick="clearUserProfile()">Reset</a></small>
     <small><a href="#" onclick="importUserProfileTurtle()">Import</a></small>

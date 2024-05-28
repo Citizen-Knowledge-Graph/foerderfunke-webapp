@@ -27,6 +27,21 @@ function searchSubjectNodeRecursively(node, sKey, action) {
     }
 }
 
+function collectSubjectNodesRecursively(node, subjectNodes) {
+    subjectNodes.push({
+        id: node["@id"],
+        type: node["@type"],
+        datafields: Object.keys(node).filter(key => !key.startsWith("@"))
+    })
+    for (let objectOrArray of Object.values(node)) {
+        if (Array.isArray(objectOrArray)) {
+            for (let arrayEl of objectOrArray) {
+                collectSubjectNodesRecursively(arrayEl, subjectNodes)
+            }
+        }
+    }
+}
+
 async function checkForNewRepoCommits() {
     console.log("Checking for updates, old commit:", latestRPsRepoCommit)
     let checkLatestRPsRepoCommit = await fetchAsset("latest-rps-repo-commit.txt")

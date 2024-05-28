@@ -11,6 +11,7 @@ let eligibleRPs
 async function run() {
     latestRPsRepoCommit = await fetchAsset("latest-rps-repo-commit.txt")
     setInterval(checkForNewRepoCommits, 60 * 1000)
+
     await parseTurtleFiles()
 
     if (localStorage.getItem("userProfile") === null) {
@@ -18,5 +19,6 @@ async function run() {
     }
     userProfile = JSON.parse(localStorage.getItem("userProfile"))
     if (!await validateUserProfile()) return
+
     await update()
 }

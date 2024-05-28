@@ -1,4 +1,46 @@
 
+async function addManualProfileEntry() {
+    document.getElementById("addNewEntryLink").style.display = "inline"
+    document.getElementById("manualProfileEntryGroup").style.display = "none"
+
+    let subjectSelectEl = document.getElementById("subjectDropdown")
+    let dfSelectEl = document.getElementById("dfDropdown")
+    if (!subjectSelectEl.value || !dfSelectEl.value) {
+        alert("Both a subject and a datafield need to be selected")
+        return
+    }
+
+    let dfUri = dfSelectEl.value
+    if (dfUri === "NEW_PREDICATE") {
+        alert("TODO")
+    } else {
+        await promptForNewProfileEntry({
+            subject: JSON.parse(subjectSelectEl.value).id,
+            dfUri: dfUri,
+            objectHasClass: metadata.df[dfUri]?.objectHasClass,
+            label: metadata.df[dfUri]?.label ?? dfUri.split("#")[1],
+        })
+    }
+
+    document.getElementById("subjectDropdown").innerHTML = ""
+    document.getElementById("dfDropdown").innerHTML = ""
+}
+
+async function promptForNewProfileEntry(entry) {
+    if (entry.objectHasClass) {
+        if (confirm("Do you want to add a " + metadata.df[entry.objectHasClass].label + "?")) {
+            instantiateNewObjectClassUnderSubject(entry.subject, entry.dfUri, entry.objectHasClass)
+            await finalizeProfileChanges()
+        }
+        return
+    }
+    let input = prompt("What is your value for: " + entry.label)
+    if (input !== null) {
+        addEntryToSubject(entry.subject, entry.dfUri, input)
+        await finalizeProfileChanges()
+    }
+}
+
 function addEntryToSubject(subject, predicate, objectValue) {
     subject = shortenLongUri(subject)
     predicate = shortenLongUri(predicate)
@@ -7,6 +49,7 @@ function addEntryToSubject(subject, predicate, objectValue) {
 }
 
 function instantiateNewObjectClassUnderSubject(subject, predicate, objectClass) {
+    predicate = shortenLongUri(predicate)
     console.log("Adding object class instantiation:", subject, predicate, "-->", objectClass)
     let shortObjectClassUri = shortenLongUri(objectClass)
     let newInstanceUri = shortObjectClassUri.toLowerCase()
@@ -14,7 +57,7 @@ function instantiateNewObjectClassUnderSubject(subject, predicate, objectClass) 
     searchNodeByEntryPredicateRecursively(userProfile, predicate, (node) => {
         nodeFound = true
         newInstanceUri = newInstanceUri + node[predicate].length
-        node[predicate].push({ "@id": newInstanceUri, "@type": shortObjectClassUri }) // verify that this works TODO
+        node[predicate].push({ "@id": newInstanceUri, "@type": shortObjectClassUri })
     })
     if (!nodeFound) { // e.g. no ff:hasChild array yet
         newInstanceUri = newInstanceUri + "0"

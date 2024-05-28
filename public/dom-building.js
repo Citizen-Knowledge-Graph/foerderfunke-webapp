@@ -1,4 +1,58 @@
 
+function handleAddNewEntry() {
+    buildSubjectSelectDropdown()
+    document.getElementById("addNewEntryLink").style.display = "none"
+    document.getElementById("manualProfileEntryGroup").style.display = "inline"
+}
+
+function buildSubjectSelectDropdown() {
+    const subjectSelectEl = document.getElementById("subjectDropdown")
+    subjectSelectEl.innerHTML = ""
+    addPlaceholderOption(subjectSelectEl, "Select a subject")
+
+    const subjectNodes = []
+    collectSubjectNodesRecursively(userProfile, subjectNodes)
+    for (let subjectNode of subjectNodes) {
+        let optionEl = document.createElement("option")
+        optionEl.value = JSON.stringify(subjectNode)
+        optionEl.textContent = MANUAL_KEY_TO_LABEL[subjectNode.id] ?? subjectNode.id
+        subjectSelectEl.appendChild(optionEl)
+    }
+    subjectSelectEl.addEventListener("change", event =>
+        buildDatafieldSelectDropdown(JSON.parse(event.target.value))
+    )
+}
+
+function buildDatafieldSelectDropdown(subjectNode) {
+    const dfSelectEl = document.getElementById("dfDropdown")
+    dfSelectEl.innerHTML = ""
+    addPlaceholderOption(dfSelectEl, "Select a datafield")
+
+    let optionEl
+    for (let df of Object.values(metadata.df)) {
+        if (df.isClass) continue
+        if (!df.objectHasClass && subjectNode.datafields.includes(shortenLongUri(df.uri))) continue
+        optionEl = document.createElement("option")
+        optionEl.value = df.uri
+        let label = df.label //  + " (" + shortenLongUri(df.uri) + ")"
+        if (df.objectHasClass) label += " --> adds a new '" + metadata.df[df.objectHasClass].label + "'"
+        optionEl.textContent = label
+        dfSelectEl.appendChild(optionEl)
+    }
+    optionEl = document.createElement("option")
+    optionEl.value = "NEW_PREDICATE"
+    optionEl.textContent = "+ Add new datafield"
+    dfSelectEl.appendChild(optionEl)
+}
+
+function addPlaceholderOption(selectEl, text) {
+    const placeholder = document.createElement("option")
+    placeholder.textContent = text
+    placeholder.disabled = true
+    placeholder.selected = true
+    selectEl.appendChild(placeholder)
+}
+
 async function buildRemovalCell(td, sKey, pKey) {
     td.textContent = "x"
     td.addEventListener("click", async function() {
@@ -150,18 +204,7 @@ async function buildPrioritizedMissingDataList() {
         })
         spanEl.addEventListener("click", async function(event) {
             event.preventDefault()
-            if (entry.objectHasClass) {
-                if (confirm("Do you want to add a " + metadata.df[entry.objectHasClass].label + "?")) {
-                    instantiateNewObjectClassUnderSubject(entry.subject, entry.dfUri, entry.objectHasClass)
-                    await finalizeProfileChanges()
-                }
-                return
-            }
-            let input = prompt("What is your value for: " + entry.label)
-            if (input !== null) {
-                addEntryToSubject(entry.subject, entry.dfUri, input)
-                await finalizeProfileChanges()
-            }
+            await promptForNewProfileEntry(entry)
         })
         div.appendChild(spanEl)
         spanEl = document.createElement("span")

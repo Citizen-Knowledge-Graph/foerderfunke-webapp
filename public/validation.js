@@ -3,7 +3,7 @@ async function update() {
     await buildProfileTable()
 
     let userProfileTurtle = await MatchingEngine.convertUserProfileToTurtle(userProfile)
-    console.log("userProfileTurtle", userProfileTurtle)
+    // console.log("userProfileTurtle", userProfileTurtle)
     validateAllReport = await MatchingEngine.validateAll(userProfileTurtle, turtleMap.shacl, turtleMap.datafields, turtleMap.materialization)
     console.log("validateAllReport", validateAllReport)
 
