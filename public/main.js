@@ -18,7 +18,10 @@ async function run() {
         localStorage.setItem("userProfile", JSON.stringify(EMPTY_PROFILE))
     }
     userProfile = JSON.parse(localStorage.getItem("userProfile"))
-    if (!await validateUserProfile()) return
+    if (!await validateUserProfile()) {
+        alert("Please reset your profile")
+        return
+    }
 
     await update()
 }
