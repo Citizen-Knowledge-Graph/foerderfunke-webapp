@@ -1,9 +1,9 @@
 const fs = require("fs")
 const path = require("path")
 
-const shaclDir = path.join(__dirname, "public/assets/requirement-profiles/sozialplattform/shacl")
+const shaclDir = path.join(__dirname, "public/assets/requirement-profiles/shacl")
 const outputFilePath = path.join(__dirname, "public/assets/shacl-list.csv")
-const pattern = /(.*?)\s+a ff:RequirementProfile/
+const pattern = /\s*(ff:[a-zA-Z0-9]+)\s*a\s*ff:RequirementProfile\s*/
 
 fs.readdir(shaclDir, (err, shaclFiles) => {
     const lines = []
