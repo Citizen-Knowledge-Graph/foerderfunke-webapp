@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "FörderFunke as a web app, the data only lives within the browser session locally",
   "dependencies": {
-    "@foerderfunke/matching-engine": "^0.5.5",
+    "@foerderfunke/matching-engine": "^0.5.8",
     "choices.js": "^10.2.0"
   },
   "scripts": {
