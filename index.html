@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FörderFunke</title>
+    <script src="./utils.js"></script>
+    <script src="./parser.js"></script>
+    <script src="./dom-building.js"></script>
+    <script src="./validation.js"></script>
+    <script src="./profile.js"></script>
+    <script src="./main.js"></script>
+    <script src="./assets/bundle.js"></script>
+    <link rel="stylesheet" href="./assets/choices.min.css" />
+    <script src="./assets/choices.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+        .loadingDiv {
+            color: gray;
+        }
+        .framed-table {
+            border: 1px solid silver;
+            border-collapse: collapse;
+        }
+        .framed-table th, .framed-table td {
+            border: 1px solid silver;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="update-banner" style="display: none; width: 100%; background-color: lightblue; color: darkblue; padding: 5px; text-align: center;">
+        Update available, reload the page to get the latest version.
+    </div>
+    <image src="./logo.png" style="width: 360px;"></image>
+    <h3>User profile</h3>
+    <div id="userProfileDiv"></div>
+    <br/>
+    <small id="addNewEntryLink"><a href="#" onclick="handleAddNewEntry()">Add new entry</a></small>
+    <div id="manualProfileEntryGroup" style="display: none">
+        <select id="subjectDropdown"></select>
+        <select id="dfDropdown"></select>
+        <input type="button" value="Add" onclick="addManualProfileEntry()"/>
+        <br/>
+    </div>
+    <br/>
+    <small><a href="#" onclick="clearUserProfile()">Reset</a></small>
+    <small><a href="#" onclick="importUserProfileTurtle()">Import</a></small>
+    <small><a href="#" onclick="downloadUserProfileTurtle()">Export</a></small>
+    <small><a href="#" onclick="showUserProfileTurtle()">Show Turtle</a></small>
+    <h3>Missing data points</h3>
+    <div>Set a focus:</div>
+    <br/>
+    <select id="focusInputSelectElement" multiple></select>
+    <div class="loadingDiv">Loading...</div>
+    <div id="missingDataPointsDiv"></div>
+    <h3>Report</h3>
+    <div class="loadingDiv">Loading...</div>
+    <table id="reportTable"></table>
+    <br/>
+    <br/>
+    <small style="font-family: 'Courier New',serif; color: gray">
+        <a style="color: gray" href="https://www.linkedin.com/company/foerderfunke" target="_blank">LinkedIn</a> |
+        <a style="color: gray" href="https://github.com/Citizen-Knowledge-Graph" target="_blank">Code</a> |
+        info@foerderfunke.org
+    </small>
+
+    <script>
+        const element = document.getElementById("focusInputSelectElement")
+        const focusInputSelect = new Choices(element, {
+            removeItemButton: true,
+            position: "bottom"
+        })
+
+        focusInputSelect.passedElement.element.addEventListener("addItem", async function() {
+            focusInputSelect.hideDropdown()
+            await buildPrioritizedMissingDataList()
+        }, false)
+
+        focusInputSelect.passedElement.element.addEventListener("removeItem", async function() {
+            await buildPrioritizedMissingDataList()
+        }, false)
+
+        run()
+    </script>
+</body>
+</html>
